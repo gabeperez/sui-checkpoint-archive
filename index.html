@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sui Checkpoint Archive - Mystical Library</title>
-    
+    <title>Sui Checkpoint Archive - Live Explorer</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -21,1132 +21,1042 @@
             --mystical-glow: 0px 0px 20px rgba(56, 182, 255, 0.6);
         }
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #03060a; /* Darker mystical background */
-            font-family: 'Lora', serif;
-            color: #e2e8f0;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #03060a;
+            font-family: 'Lora', serif; color: #e2e8f0;
         }
         canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
+            display: block; position: absolute; top: 0; left: 0;
+            z-index: 1; width: 100%; height: 100%;
         }
         #ui-layer {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            height: 100%;
+            position: relative; z-index: 10; width: 100%; height: 100%;
             pointer-events: none;
         }
-        .pointer-events-auto {
-            pointer-events: auto;
-        }
-        .title-font {
-            font-family: 'Cinzel', serif;
-        }
+        .pointer-events-auto { pointer-events: auto; }
+        .title-font { font-family: 'Cinzel', serif; }
         .glass-panel {
-            background: rgba(10, 15, 25, 0.75);
+            background: rgba(10, 15, 25, 0.80);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(56, 182, 255, 0.25);
-            box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.5), var(--mystical-glow);
+            box-shadow: 0px 8px 32px rgba(0,0,0,0.5), var(--mystical-glow);
         }
-        .loading-screen {
-            background: linear-gradient(135deg, #03060a 0%, #0f172a 100%);
-            z-index: 100;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3); 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(56, 182, 255, 0.5); 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(56, 182, 255, 0.9); 
-        }
-        .tome-btn {
-            transition: all 0.3s ease;
-        }
-        .tome-btn:hover {
-            box-shadow: 0px 0px 20px rgba(56, 182, 255, 0.9);
-            transform: translateY(-2px);
-        }
+        .loading-screen { background: linear-gradient(135deg, #03060a 0%, #0f172a 100%); z-index: 100; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: rgba(56,182,255,0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(56,182,255,0.9); }
+        .crystal-btn { transition: all 0.3s ease; }
+        .crystal-btn:hover { box-shadow: 0px 0px 20px rgba(56,182,255,0.9); transform: translateY(-2px); }
         .search-bar {
-            background: rgba(10, 15, 25, 0.9);
-            border: 1px solid rgba(56, 182, 255, 0.5);
+            background: rgba(10,15,25,0.9);
+            border: 1px solid rgba(56,182,255,0.5);
             transition: all 0.3s ease;
         }
         .search-bar:focus-within {
-            box-shadow: 0px 0px 25px rgba(56, 182, 255, 0.8);
-            border-color: rgba(56, 182, 255, 1);
+            box-shadow: 0px 0px 25px rgba(56,182,255,0.8);
+            border-color: rgba(56,182,255,1);
         }
-        .ledger-row {
-            transition: background 0.2s;
+        .tx-row {
+            transition: background 0.15s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            color: inherit;
         }
-        .ledger-row:hover {
-            background: rgba(56, 182, 255, 0.15);
+        .tx-row:hover { background: rgba(56,182,255,0.1); }
+        .tab-btn { padding: 0.5rem 1rem; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn.active { border-bottom-color: var(--sui-blue); color: var(--sui-blue); }
+        .tx-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 9999px;
+            font-size: 11px; font-weight: 600;
         }
-        .highlight-row {
-            background: rgba(56, 182, 255, 0.25);
-            border-left: 4px solid var(--sui-blue);
+        .nav-btn {
+            background: rgba(56,182,255,0.12);
+            border: 1px solid rgba(56,182,255,0.35);
+            transition: all 0.2s; padding: 3px 9px;
+            border-radius: 6px; font-size: 12px; cursor: pointer;
+            color: #93c5fd;
         }
-        .tab-btn {
-            padding: 0.5rem 1rem;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(56,182,255,0.28);
+            box-shadow: 0 0 10px rgba(56,182,255,0.4);
+            color: white;
         }
-        .tab-btn.active {
-            border-bottom-color: var(--sui-blue);
-            color: var(--sui-blue);
+        .nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
+        .stat-card {
+            background: rgba(56,182,255,0.07);
+            border: 1px solid rgba(56,182,255,0.18);
+            border-radius: 10px; padding: 8px; text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Loading Screen -->
-    <div id="loading" class="loading-screen fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="animate-pulse flex flex-col items-center">
-            <svg class="w-20 h-20 text-blue-400 mb-6 drop-shadow-[0_0_15px_rgba(56,182,255,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-            <h1 class="title-font text-4xl text-blue-200 tracking-widest text-center drop-shadow-[0_0_10px_rgba(56,182,255,0.5)]">Awakening the Archive...</h1>
-        </div>
+<!-- Loading Screen -->
+<div id="loading" class="loading-screen fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-1000 z-[100]">
+    <div class="animate-pulse flex flex-col items-center">
+        <svg class="w-20 h-20 text-blue-400 mb-6 drop-shadow-[0_0_15px_rgba(56,182,255,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+        <h1 class="title-font text-4xl text-blue-200 tracking-widest text-center drop-shadow-[0_0_10px_rgba(56,182,255,0.5)]">Awakening the Archive...</h1>
+        <p id="loading-status" class="text-blue-400 text-sm mt-4 opacity-70">Connecting to Sui Mainnet...</p>
     </div>
+</div>
 
-    <!-- UI Layer -->
-    <div id="ui-layer" class="flex flex-col justify-between p-4 md:p-8 opacity-0 transition-opacity duration-1000 h-full">
-        
-        <!-- Header -->
-        <header class="flex justify-between items-start pointer-events-auto">
-            <div>
-                <h1 class="title-font text-3xl md:text-5xl font-bold text-white mb-1 drop-shadow-[0_0_15px_rgba(56,182,255,0.8)]">The Sui Archives</h1>
-                <p class="text-blue-300 italic text-xs md:text-sm opacity-90 drop-shadow-[0_0_5px_rgba(56,182,255,0.5)]">Unconfirmed Labs Checkpoint Repository</p>
-            </div>
-            <a href="https://github.com/unconfirmedlabs/sui-checkpoint-archive" target="_blank" class="tome-btn glass-panel px-3 py-2 md:px-4 rounded-lg text-blue-300 hover:text-white flex items-center gap-2 text-xs md:text-sm">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
-                <span class="hidden md:inline">GitHub</span>
-            </a>
-        </header>
+<!-- UI Layer -->
+<div id="ui-layer" class="flex flex-col justify-between p-4 md:p-8 opacity-0 transition-opacity duration-1000 h-full">
 
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col md:flex-row items-end justify-between pb-20 md:pb-4 pointer-events-none gap-4">
-            
-            <!-- Owl Dialogue -->
-            <div id="owl-dialogue" class="glass-panel p-4 md:p-6 rounded-xl w-full md:max-w-md pointer-events-auto shrink-0 cursor-pointer hover:bg-blue-900/40 transition-colors" onclick="toggleSearchMenu()">
-                <div class="flex items-start gap-4">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#050b14] flex items-center justify-center border-2 border-blue-400 shrink-0 overflow-hidden shadow-[0_0_15px_rgba(56,182,255,0.6)]">
-                        <span class="text-xl md:text-2xl filter drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">🦉</span>
-                    </div>
-                    <div>
-                        <h3 class="title-font text-blue-300 font-bold text-base md:text-lg drop-shadow-[0_0_5px_rgba(56,182,255,0.5)]">Orion, The Keeper</h3>
-                        <p id="dialogue-text" class="text-gray-200 text-xs md:text-sm mt-1 leading-relaxed">
-                            Greetings. Click a glowing tome to examine its contents, or click me to search the network's history.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Ledger Panel (Desktop & Mobile Unified) -->
-            <div id="info-panel" class="glass-panel p-4 md:p-6 rounded-xl w-full md:max-w-2xl pointer-events-auto transform translate-x-[120%] transition-transform duration-500 ease-out hidden flex-col h-[50vh] md:max-h-[75vh] md:h-auto absolute md:relative bottom-0 right-0 md:bottom-auto">
-                <div class="flex justify-between items-center mb-4 border-b border-blue-500/30 pb-2 shrink-0">
-                    <div>
-                        <h2 id="info-epoch" class="title-font text-xl md:text-2xl text-blue-200 font-bold drop-shadow-[0_0_8px_rgba(56,182,255,0.6)]">Tome of Genesis</h2>
-                        <p id="info-desc" class="text-xs md:text-sm text-gray-400 mt-1">Epochs 0 - 99</p>
-                    </div>
-                    <button onclick="closeInfoPanel()" class="text-gray-400 hover:text-white text-3xl transition-transform hover:scale-110">&times;</button>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                    <table class="w-full text-left border-collapse text-xs md:text-sm">
-                        <thead class="sticky top-0 bg-[#0a0f1d] text-blue-400 uppercase tracking-wider z-10 shadow-md">
-                            <tr>
-                                <th class="py-3 px-2 md:px-4 rounded-tl-lg">Epoch</th>
-                                <th class="py-3 px-2 md:px-4 hidden sm:table-cell">Size</th>
-                                <th class="py-3 px-2 md:px-4 text-center">Details</th>
-                                <th class="py-3 px-2 md:px-4 text-right rounded-tr-lg">Fetch</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledger-body" class="text-gray-300">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        <!-- Live Ticker (Bottom Right) -->
-        <div class="absolute bottom-4 right-4 md:bottom-8 md:right-8 glass-panel p-3 md:p-4 rounded-xl pointer-events-auto flex items-center gap-3">
-            <div class="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.8)]"></div>
-            <div>
-                <p class="text-[10px] md:text-xs text-blue-300 uppercase tracking-wider font-bold">Live Archive Head</p>
-                <div class="font-mono text-base md:text-xl text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" id="live-ticker">34,502,190</div>
-                <p class="text-[10px] md:text-xs text-gray-400 mt-0.5">~0.4s lag | <span class="text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.8)]">Healthy</span></p>
-            </div>
+    <!-- Header -->
+    <header class="flex justify-between items-start pointer-events-auto">
+        <div>
+            <h1 class="title-font text-3xl md:text-5xl font-bold text-white mb-1 drop-shadow-[0_0_15px_rgba(56,182,255,0.8)]">The Sui Archives</h1>
+            <p class="text-blue-300 italic text-xs md:text-sm opacity-90">Unconfirmed Labs &middot; Live Checkpoint Explorer</p>
         </div>
+        <a href="https://github.com/gabeperez/sui-checkpoint-archive" target="_blank" class="crystal-btn glass-panel px-3 py-2 md:px-4 rounded-lg text-blue-300 hover:text-white flex items-center gap-2 text-xs md:text-sm">
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg>
+            <span class="hidden md:inline">GitHub</span>
+        </a>
+    </header>
 
-    </div>
+    <!-- Main content -->
+    <main class="flex-1 flex flex-col md:flex-row items-end justify-between pb-20 md:pb-4 pointer-events-none gap-4">
 
-    <!-- Hidden Owl Search Menu -->
-    <div id="search-menu" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 glass-panel p-6 rounded-2xl z-[60] pointer-events-auto w-[90%] max-w-lg shadow-2xl border-blue-400/50">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="title-font text-xl text-blue-200 font-bold flex items-center gap-2 drop-shadow-[0_0_8px_rgba(56,182,255,0.6)]">
-                <span>🦉</span> Seek Knowledge
-            </h3>
-            <button onclick="toggleSearchMenu()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
-        </div>
-        <div class="search-bar rounded-xl flex items-center px-4 py-3 mb-4">
-            <svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            <input type="text" id="master-search" placeholder="Epoch, Tx Digest (0x...), Checkpoint..." class="bg-transparent border-none text-white w-full focus:outline-none ml-3 placeholder-blue-300/50 text-sm font-mono">
-        </div>
-        <div id="search-results-list" class="max-h-64 overflow-y-auto custom-scrollbar border border-blue-500/30 rounded-lg bg-[#050810]/90">
-            <div class="p-4 text-sm text-gray-400 text-center italic">Type a query to begin your search through the archives...</div>
-        </div>
-    </div>
-
-    <!-- Epoch Details Modal (Story/Dev) -->
-    <div id="epoch-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md pointer-events-auto p-4">
-        <div class="glass-panel rounded-2xl w-full max-w-xl overflow-hidden border border-blue-400/50 shadow-[0_0_40px_rgba(56,182,255,0.3)] flex flex-col max-h-[90vh]">
-            <div class="p-4 border-b border-blue-500/40 flex justify-between items-center bg-[#0a0f1d]">
-                <h3 class="title-font text-xl text-white font-bold drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]" id="modal-epoch-title">Epoch --</h3>
-                <button onclick="closeEpochModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
-            </div>
-            
-            <div class="flex border-b border-blue-500/30 bg-[#050810]">
-                <button class="tab-btn flex-1 text-sm font-bold text-gray-400 active" onclick="switchTab('story')">Story Mode 📖</button>
-                <button class="tab-btn flex-1 text-sm font-bold text-gray-400" onclick="switchTab('dev')">Developer Mode 💻</button>
-            </div>
-
-            <div class="p-6 overflow-y-auto custom-scrollbar bg-[#0a0f1d]/50" id="tab-content-story">
-                <p class="text-gray-200 text-sm leading-relaxed mb-4" id="modal-story-text">
-                    Loading the ancient texts...
-                </p>
-                <div class="bg-blue-900/30 p-4 rounded-lg border border-blue-500/40 text-xs text-blue-200 shadow-inner">
-                    <span class="font-bold block mb-1 text-blue-300">Archive Note:</span>
-                    This epoch was successfully sealed by the guardians of the network. The cryptographic proofs stand unbroken.
+        <!-- Owl dialogue -->
+        <div id="owl-dialogue" class="glass-panel p-4 md:p-5 rounded-xl w-full md:max-w-sm pointer-events-auto shrink-0 cursor-pointer hover:bg-blue-900/30 transition-colors" onclick="toggleSearchMenu()">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#050b14] flex items-center justify-center border-2 border-blue-400 shrink-0 shadow-[0_0_15px_rgba(56,182,255,0.6)]">
+                    <span class="text-xl md:text-2xl">&#x1F989;</span>
                 </div>
-            </div>
-
-            <div class="p-6 overflow-y-auto custom-scrollbar hidden bg-[#050810]" id="tab-content-dev">
-                <div class="bg-[#020408] p-4 rounded-lg border border-gray-700 font-mono text-xs text-green-400 whitespace-pre-wrap overflow-x-auto shadow-inner" id="modal-dev-json">
-                    { "loading": true }
+                <div>
+                    <h3 class="title-font text-blue-300 font-bold text-sm md:text-base drop-shadow-[0_0_5px_rgba(56,182,255,0.5)]">Orion, The Keeper</h3>
+                    <p id="dialogue-text" class="text-gray-200 text-xs md:text-sm mt-1 leading-relaxed">Awakening the archive...</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Checkpoint / Verification Modal -->
-    <div id="checkpoint-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-lg pointer-events-auto p-4">
-        <div class="glass-panel rounded-2xl w-full max-w-md p-6 md:p-8 text-center border-green-500/60 shadow-[0_0_50px_rgba(74,222,128,0.3)] bg-[#0a1510]/80">
-            <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-green-400 shadow-[0_0_20px_rgba(74,222,128,0.5)]">
-                <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-            </div>
-            <h2 class="title-font text-2xl text-white font-bold mb-2 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]">BLS Signatures Verified</h2>
-            <p class="text-green-300 font-mono text-sm mb-6 bg-green-900/40 py-2 px-3 rounded break-all border border-green-500/30" id="verify-hash">Sequence #450,000</p>
-            
-            <div class="text-left bg-[#020408]/80 p-4 rounded-lg border border-blue-500/30 text-sm text-gray-300 mb-6 space-y-2 shadow-inner">
-                <div class="flex justify-between"><span class="text-gray-500">Epoch</span> <span class="font-mono text-white" id="v-epoch">45</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Timestamp</span> <span class="font-mono text-white" id="v-time">2023-08-14 12:44:02 UTC</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Transactions</span> <span class="font-mono text-white" id="v-tx">1,402</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Gas Burned</span> <span class="font-mono text-white" id="v-gas">0.05 SUI</span></div>
-            </div>
+        <!-- Checkpoint detail panel -->
+        <div id="info-panel" class="glass-panel p-4 md:p-5 rounded-xl w-full md:max-w-xl pointer-events-auto transform translate-x-[120%] transition-transform duration-500 ease-out hidden flex-col" style="max-height:72vh;">
 
-            <button onclick="closeVerifyModal()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg text-white font-bold transition-all shadow-[0_0_15px_rgba(56,182,255,0.4)] hover:shadow-[0_0_25px_rgba(56,182,255,0.8)]">
-                Return to Archives
-            </button>
-        </div>
-    </div>
-
-    <!-- 3D Canvas Container -->
-    <canvas id="bg"></canvas>
-
-    <script>
-        // Generate Mock Data for 1000 Epochs, grouped into 10 Tomes (Books)
-        const TOTAL_EPOCHS = 1000;
-        const EPOCHS_PER_TOME = 100;
-        const archiveBooks = [];
-        const allEpochs = []; 
-
-        const tomeColors = [0x38b6ff, 0x4ade80, 0xa78bfa, 0xf472b6, 0xfacc15, 0xef4444, 0x0ea5e9, 0x10b981, 0x8b5cf6, 0xdddddd];
-        const tomeNames = ["Genesis", "Awakening", "Expansion", "Maturity", "Convergence", "The Shattering", "Rebirth", "Ascension", "Zenith", "The Unfolding Present"];
-
-        for (let i = 0; i < TOTAL_EPOCHS / EPOCHS_PER_TOME; i++) {
-            const startEpoch = i * EPOCHS_PER_TOME;
-            const endEpoch = startEpoch + EPOCHS_PER_TOME - 1;
-            
-            const book = {
-                title: `Tome of ${tomeNames[i]}`,
-                epochRange: `Epochs ${startEpoch} - ${endEpoch}`,
-                color: tomeColors[i],
-                desc: `A historical ledger containing raw network state from epoch ${startEpoch} to ${endEpoch}.`,
-                items: []
-            };
-
-            for (let e = startEpoch; e <= endEpoch; e++) {
-                const epochData = {
-                    epoch: e,
-                    checkpoints: `${e * 10000} - ${(e + 1) * 10000 - 1}`,
-                    size: (Math.random() * 50 + 10).toFixed(1) + " GB",
-                    status: e === TOTAL_EPOCHS - 1 ? 'Syncing...' : 'Archived',
-                    bookIndex: i,
-                    dateRange: `2024-0${Math.floor(Math.random() * 9) + 1}-01 to 2024-0${Math.floor(Math.random() * 9) + 1}-28`,
-                    txCount: Math.floor(Math.random() * 5000000) + 1000000,
-                    valCount: Math.floor(Math.random() * 20) + 100,
-                    gasFund: (Math.random() * 1000000).toFixed(2)
-                };
-                book.items.push(epochData);
-                allEpochs.push(epochData);
-            }
-            archiveBooks.push(book);
-        }
-
-        // Live Ticker Logic
-        let currentHead = 34502190;
-        setInterval(() => {
-            currentHead += Math.floor(Math.random() * 3) + 1;
-            const el = document.getElementById('live-ticker');
-            if(el) el.innerText = currentHead.toLocaleString();
-        }, 400);
-
-        let scene, camera, renderer, controls;
-        let owlGroup, bookGroup;
-        let fireflies, magicDust;
-        let raycaster, mouse;
-        let hoveredBook = null;
-        let selectedBook = null;
-        let clock = new THREE.Clock();
-        const tomes = []; 
-        const bookPedestals = []; // Store to animate them along with books
-
-        function init() {
-            const canvas = document.querySelector('#bg');
-            scene = new THREE.Scene();
-            // Enhanced Mystical Fog
-            scene.fog = new THREE.FogExp2(0x020611, 0.035);
-            scene.background = new THREE.Color(0x020611);
-
-            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 4, 12);
-
-            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.08; // Keep camera higher off the ground to avoid obstruction
-            controls.minDistance = 3;
-            controls.maxDistance = 18; // Prevent zooming back into the forest canopy
-            controls.target.set(0, 2, 0);
-
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            // Improved Atmospheric Lighting
-            const ambientLight = new THREE.AmbientLight(0x0c1a30, 0.8); 
-            scene.add(ambientLight);
-
-            // Moonlight casting long shadows
-            const moonLight = new THREE.DirectionalLight(0xaaccff, 1.2);
-            moonLight.position.set(-15, 30, -20);
-            moonLight.castShadow = true;
-            moonLight.shadow.mapSize.width = 2048;
-            moonLight.shadow.mapSize.height = 2048;
-            moonLight.shadow.camera.near = 0.5;
-            moonLight.shadow.camera.far = 100;
-            moonLight.shadow.camera.left = -25;
-            moonLight.shadow.camera.right = 25;
-            moonLight.shadow.camera.top = 25;
-            moonLight.shadow.camera.bottom = -25;
-            moonLight.shadow.bias = -0.001;
-            scene.add(moonLight);
-
-            // Magical center fill light
-            const centerLight = new THREE.PointLight(0x38b6ff, 1.5, 15);
-            centerLight.position.set(0, 3, 0);
-            scene.add(centerLight);
-
-            // Create background Moon
-            const moonGeo = new THREE.SphereGeometry(15, 32, 32);
-            const moonMat = new THREE.MeshBasicMaterial({ color: 0xeef5ff });
-            const moonMesh = new THREE.Mesh(moonGeo, moonMat);
-            moonMesh.position.set(-40, 60, -80);
-            scene.add(moonMesh);
-
-            createEnvironment();
-            createOwl();
-            createArchives();
-            createParticles();
-
-            window.addEventListener('resize', onWindowResize);
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('click', onClick);
-            window.addEventListener('touchstart', onTouchStart, {passive: false});
-
-            const searchInput = document.getElementById('master-search');
-            const searchResults = document.getElementById('search-results-list');
-
-            searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.trim().toLowerCase();
-                searchResults.innerHTML = '';
-                
-                if (query.length === 0) {
-                    searchResults.innerHTML = '<div class="p-4 text-sm text-gray-400 text-center italic">Type a query to begin your search...</div>';
-                    return;
-                }
-
-                if (query.startsWith('0x') || (!isNaN(query) && parseInt(query) > 1000)) {
-                    searchResults.innerHTML = `
-                        <div class="p-4 hover:bg-green-900/30 cursor-pointer border-b border-blue-500/10 flex justify-between items-center group transition-colors" onclick="openVerifyModal('${query}')">
-                            <div>
-                                <span class="text-green-400 font-bold block drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">Verify Network State</span>
-                                <span class="text-xs text-gray-400 font-mono">${query.substring(0,20)}${query.length>20?'...':''}</span>
-                            </div>
-                            <svg class="w-5 h-5 text-green-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            <!-- Panel header -->
+            <div class="flex justify-between items-start mb-3 border-b border-blue-500/25 pb-3 shrink-0">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h2 id="cp-seq" class="title-font text-lg md:text-2xl text-blue-200 font-bold drop-shadow-[0_0_8px_rgba(56,182,255,0.6)]">Checkpoint #&#x2014;</h2>
+                        <div class="flex gap-1">
+                            <button id="btn-prev" class="nav-btn" onclick="navigateCheckpoint(-1)">&larr; Prev</button>
+                            <button id="btn-next" class="nav-btn" onclick="navigateCheckpoint(1)">Next &rarr;</button>
                         </div>
-                    `;
-                    return;
-                }
+                    </div>
+                    <p id="cp-meta" class="text-xs text-gray-400 mt-1 font-mono truncate">Epoch &#x2014; &middot; &#x2014;</p>
+                </div>
+                <button onclick="closeInfoPanel()" class="text-gray-400 hover:text-white text-3xl leading-none ml-2">&times;</button>
+            </div>
 
-                const results = allEpochs.filter(ep => ep.epoch.toString().includes(query)).slice(0, 6);
-                
-                if (results.length > 0) {
-                    results.forEach(res => {
-                        const div = document.createElement('div');
-                        div.className = 'p-3 hover:bg-blue-900/50 cursor-pointer border-b border-blue-500/20 flex justify-between items-center transition-colors';
-                        div.innerHTML = `
-                            <div>
-                                <span class="text-white font-bold block">Epoch ${res.epoch}</span>
-                                <span class="text-xs text-blue-300">${archiveBooks[res.bookIndex].title}</span>
-                            </div>
-                            <span class="text-xs text-gray-400">${res.dateRange.split(' ')[0]}</span>
-                        `;
-                        div.onclick = () => {
-                            toggleSearchMenu(); 
-                            searchInput.value = '';
-                            const targetBookMesh = tomes[res.bookIndex];
-                            selectTome(targetBookMesh, res.epoch);
-                        };
-                        searchResults.appendChild(div);
-                    });
-                } else {
-                    searchResults.innerHTML = '<div class="p-4 text-gray-400 text-sm text-center">No knowledge matches this query.</div>';
-                }
-            });
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-2 mb-3 shrink-0">
+                <div class="stat-card">
+                    <div id="stat-tx" class="text-base md:text-lg font-bold font-mono text-white">&#x2014;</div>
+                    <div class="text-[10px] text-blue-400 uppercase tracking-wide mt-0.5">Total Txns</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-user" class="text-base md:text-lg font-bold font-mono text-white">&#x2014;</div>
+                    <div class="text-[10px] text-blue-400 uppercase tracking-wide mt-0.5">User Txns</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-sys" class="text-base md:text-lg font-bold font-mono text-white">&#x2014;</div>
+                    <div class="text-[10px] text-blue-400 uppercase tracking-wide mt-0.5">System Txns</div>
+                </div>
+            </div>
 
-            // Hide loading
-            setTimeout(() => {
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('ui-layer').style.opacity = '1';
-                }, 1000);
-            }, 1000);
+            <!-- Tabs -->
+            <div class="flex border-b border-blue-500/25 mb-3 shrink-0">
+                <button class="tab-btn flex-1 text-xs md:text-sm font-bold text-gray-400 active" onclick="switchTab('transactions')">Transactions &#x1F4DC;</button>
+                <button class="tab-btn flex-1 text-xs md:text-sm font-bold text-gray-400" onclick="switchTab('raw')">Raw Data &#x1F4BB;</button>
+            </div>
 
-            animate();
+            <!-- Transactions tab -->
+            <div id="tab-transactions" class="flex-1 overflow-y-auto min-h-0">
+                <div id="tx-list">
+                    <div class="text-center text-gray-500 text-sm py-6 animate-pulse">Decoding transactions...</div>
+                </div>
+            </div>
+
+            <!-- Raw tab -->
+            <div id="tab-raw" class="hidden flex-1 overflow-y-auto min-h-0">
+                <pre class="bg-[#020408] p-3 rounded-lg border border-gray-700 font-mono text-xs text-green-400 whitespace-pre-wrap overflow-x-auto" id="cp-raw-json">{}</pre>
+            </div>
+        </div>
+    </main>
+
+    <!-- Live ticker -->
+    <div class="absolute bottom-4 right-4 md:bottom-8 md:right-8 glass-panel p-3 md:p-4 rounded-xl pointer-events-auto flex items-center gap-3">
+        <div class="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.8)]"></div>
+        <div>
+            <p class="text-[10px] md:text-xs text-blue-300 uppercase tracking-wider font-bold">Latest Checkpoint</p>
+            <div class="font-mono text-base md:text-xl text-white font-bold" id="live-ticker">&#x2014;</div>
+            <p class="text-[10px] md:text-xs text-gray-400 mt-0.5">Sui Mainnet &middot; <span class="text-green-400">Live</span></p>
+        </div>
+    </div>
+</div>
+
+<!-- Search modal -->
+<div id="search-menu" class="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 glass-panel p-6 rounded-2xl z-[60] pointer-events-auto w-[90%] max-w-lg shadow-2xl">
+    <div class="flex justify-between items-center mb-5">
+        <h3 class="title-font text-xl text-blue-200 font-bold flex items-center gap-2">&#x1F989; Seek a Checkpoint</h3>
+        <button onclick="toggleSearchMenu()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+    </div>
+    <div class="search-bar rounded-xl flex items-center px-4 py-3 mb-4">
+        <svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input type="number" id="master-search" placeholder="Enter checkpoint sequence number..." class="bg-transparent border-none text-white w-full focus:outline-none ml-3 placeholder-blue-300/40 text-sm font-mono" min="0">
+    </div>
+    <button onclick="searchCheckpoint()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg text-white font-bold transition-all shadow-[0_0_15px_rgba(56,182,255,0.4)]">
+        Open Checkpoint
+    </button>
+    <p id="search-error" class="text-red-400 text-sm text-center mt-3 hidden">Checkpoint not found or invalid number.</p>
+</div>
+
+<canvas id="bg"></canvas>
+
+<script>
+// ── RPC ───────────────────────────────────────────────────────────────────────
+const SUI_RPC = 'https://fullnode.mainnet.sui.io';
+let rpcId = 0;
+
+async function rpc(method, params) {
+    if (params === undefined) params = [];
+    const res = await fetch(SUI_RPC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: ++rpcId, method: method, params: params })
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message);
+    return json.result;
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var latestSeq = 0;
+var displayedCheckpoints = [];
+var selectedCpSeq = null;
+var selectedCrystal = null;
+var hoveredCrystal = null;
+var isNavigating = false;
+
+// ── Three.js globals ──────────────────────────────────────────────────────────
+var scene, camera, renderer, controls, raycaster, mouse, clock;
+var owlGroup, fireflies, magicDust;
+var crystals = [];
+var CRYSTAL_COUNT = 9;
+
+function init() {
+    var canvas = document.querySelector('#bg');
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020611, 0.035);
+    scene.background = new THREE.Color(0x020611);
+
+    camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 4, 12);
+
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.08;
+    controls.minDistance = 3;
+    controls.maxDistance = 18;
+    controls.target.set(0, 2, 0);
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    clock = new THREE.Clock();
+
+    scene.add(new THREE.AmbientLight(0x0c1a30, 0.8));
+
+    var moonLight = new THREE.DirectionalLight(0xaaccff, 1.2);
+    moonLight.position.set(-15, 30, -20);
+    moonLight.castShadow = true;
+    moonLight.shadow.mapSize.width = 2048;
+    moonLight.shadow.mapSize.height = 2048;
+    moonLight.shadow.camera.near = 0.5;
+    moonLight.shadow.camera.far = 100;
+    moonLight.shadow.camera.left = -25;
+    moonLight.shadow.camera.right = 25;
+    moonLight.shadow.camera.top = 25;
+    moonLight.shadow.camera.bottom = -25;
+    moonLight.shadow.bias = -0.001;
+    scene.add(moonLight);
+
+    var centerLight = new THREE.PointLight(0x38b6ff, 1.5, 15);
+    centerLight.position.set(0, 3, 0);
+    scene.add(centerLight);
+
+    var moon = new THREE.Mesh(
+        new THREE.SphereGeometry(15, 32, 32),
+        new THREE.MeshBasicMaterial({ color: 0xeef5ff })
+    );
+    moon.position.set(-40, 60, -80);
+    scene.add(moon);
+
+    buildEnvironment();
+    buildOwl();
+    buildCrystals();
+    buildParticles();
+
+    window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    window.addEventListener('mousemove', function(e) {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+    window.addEventListener('click', onSceneClick);
+    window.addEventListener('touchstart', function(e) {
+        if (e.target.closest('.pointer-events-auto')) return;
+        if (e.touches.length > 0) {
+            mouse.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+            onSceneClick(e);
         }
+    }, { passive: false });
 
-        function createEnvironment() {
-            // Rolling Terrain
-            const groundGeo = new THREE.PlaneGeometry(150, 150, 64, 64);
-            const positions = groundGeo.attributes.position.array;
-            
-            for(let i = 0; i < positions.length; i += 3) {
-                const x = positions[i];
-                const y = positions[i+1];
-                const dist = Math.sqrt(x*x + y*y);
-                
-                // Noise function for rolling hills
-                let height = (Math.sin(x * 0.1) * Math.cos(y * 0.1)) * 2.5;
-                height += (Math.sin(x * 0.05) + Math.cos(y * 0.05)) * 4;
-                
-                // Completely flatten the clearing to prevent ground from hiding books
-                if (dist < 10) {
-                    height = 0;
-                } else if (dist < 20) {
-                    // Smooth transition to rolling hills
-                    const t = (dist - 10) / 10;
-                    height = height * (t * t * (3 - 2 * t));
-                }
-                
-                // Subtle high-frequency noise
-                height += Math.random() * 0.2;
-                
-                positions[i+2] = height; 
-            }
-            groundGeo.computeVertexNormals();
-            
-            const groundMat = new THREE.MeshStandardMaterial({ 
-                color: 0x061118, // Deep dark green/blue
-                roughness: 0.9, 
-                metalness: 0.05,
-                flatShading: true
-            });
-            const ground = new THREE.Mesh(groundGeo, groundMat);
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            scene.add(ground);
+    document.getElementById('master-search').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') searchCheckpoint();
+    });
 
-            // Ancient Forest Trees
-            const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x0a0c10, roughness: 1 });
-            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x051a1a, roughness: 0.8, flatShading: true });
-            
-            for(let i = 0; i < 60; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                // Push trees much further back (min 22) so they don't block the tomes or camera
-                const dist = 22 + Math.random() * 40;
-                const x = Math.cos(angle) * dist;
-                const z = Math.sin(angle) * dist;
-                
-                // Sample ground height roughly
-                const groundY = (Math.sin(x * 0.1) * Math.cos(z * 0.1)) * 2.5 + (Math.sin(x * 0.05) + Math.cos(z * 0.05)) * 4;
+    animate();
+    loadInitialData();
+}
 
-                const treeGroup = new THREE.Group();
-                treeGroup.position.set(x, groundY, z);
-
-                // Trunk
-                const radius = 0.4 + Math.random() * 0.8;
-                const height = 15 + Math.random() * 15;
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.5, radius, height, 7), treeTrunkMat);
-                trunk.position.y = height / 2;
-                trunk.castShadow = true;
-                trunk.receiveShadow = true;
-                treeGroup.add(trunk);
-
-                // Canopy (Overlapping Icosahedrons)
-                const numCanopies = 3 + Math.floor(Math.random() * 3);
-                for(let c = 0; c < numCanopies; c++) {
-                    const canopySize = 3 + Math.random() * 4;
-                    const canopy = new THREE.Mesh(new THREE.IcosahedronGeometry(canopySize, 1), leavesMat);
-                    canopy.position.set(
-                        (Math.random() - 0.5) * 4,
-                        height - 2 + (Math.random() * 6),
-                        (Math.random() - 0.5) * 4
-                    );
-                    canopy.scale.y = 0.6 + Math.random() * 0.4;
-                    canopy.castShadow = true;
-                    treeGroup.add(canopy);
-                }
-                scene.add(treeGroup);
-            }
-
-            // Glowing Mushrooms (Mystical Touch)
-            const stalkMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.8 });
-            const capMats = [
-                new THREE.MeshStandardMaterial({ color: 0x38b6ff, emissive: 0x38b6ff, emissiveIntensity: 0.5 }),
-                new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x4ade80, emissiveIntensity: 0.5 }),
-                new THREE.MeshStandardMaterial({ color: 0xa78bfa, emissive: 0xa78bfa, emissiveIntensity: 0.5 })
-            ];
-
-            for(let i=0; i<30; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                // Place mushrooms slightly outside the book ring (radius 6)
-                const dist = 8 + Math.random() * 15;
-                const mushGroup = new THREE.Group();
-                mushGroup.position.set(Math.cos(angle)*dist, 0.1, Math.sin(angle)*dist);
-
-                const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.4, 8), stalkMat);
-                stalk.position.y = 0.2;
-                const capMat = capMats[Math.floor(Math.random() * capMats.length)];
-                const cap = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.2, 8), capMat);
-                cap.position.y = 0.4;
-                
-                mushGroup.add(stalk, cap);
-                
-                // Add tiny light to some mushrooms
-                if(Math.random() > 0.5) {
-                    const mLight = new THREE.PointLight(capMat.color, 0.2, 2);
-                    mLight.position.y = 0.5;
-                    mushGroup.add(mLight);
-                }
-                scene.add(mushGroup);
-            }
-
-            // Central Altar / Pedestal for Owl
-            const altarGroup = new THREE.Group();
-            
-            const baseGeo = new THREE.CylinderGeometry(4, 4.5, 0.6, 16);
-            const stoneMat = new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true });
-            const base = new THREE.Mesh(baseGeo, stoneMat);
-            base.position.y = 0.3;
-            base.receiveShadow = true;
-            altarGroup.add(base);
-
-            const stepGeo = new THREE.CylinderGeometry(3.5, 3.8, 0.4, 16);
-            const step = new THREE.Mesh(stepGeo, stoneMat);
-            step.position.y = 0.8;
-            step.receiveShadow = true;
-            altarGroup.add(step);
-
-            // Floating Runes Ring around altar
-            const ringGeo = new THREE.TorusGeometry(4.8, 0.05, 8, 32);
-            const ringMat = new THREE.MeshBasicMaterial({ color: 0x38b6ff, transparent: true, opacity: 0.6 });
-            const ring = new THREE.Mesh(ringGeo, ringMat);
-            ring.position.y = 0.5;
-            ring.rotation.x = Math.PI / 2;
-            ring.name = "magicRing";
-            altarGroup.add(ring);
-
-            scene.add(altarGroup);
+// ── Environment ───────────────────────────────────────────────────────────────
+function buildEnvironment() {
+    var groundGeo = new THREE.PlaneGeometry(150, 150, 64, 64);
+    var pos = groundGeo.attributes.position.array;
+    for (var i = 0; i < pos.length; i += 3) {
+        var x = pos[i], y = pos[i + 1];
+        var dist = Math.sqrt(x * x + y * y);
+        var h = (Math.sin(x * 0.1) * Math.cos(y * 0.1)) * 2.5 + (Math.sin(x * 0.05) + Math.cos(y * 0.05)) * 4;
+        if (dist < 10) {
+            h = 0;
+        } else if (dist < 20) {
+            var t = (dist - 10) / 10;
+            h *= t * t * (3 - 2 * t);
         }
+        h += Math.random() * 0.2;
+        pos[i + 2] = h;
+    }
+    groundGeo.computeVertexNormals();
+    var ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ color: 0x061118, roughness: 0.9, metalness: 0.05, flatShading: true }));
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-        function createOwl() {
-            owlGroup = new THREE.Group();
-            owlGroup.position.set(0, 3.5, -1.5); // Elevated, sitting on a perch
-
-            const featherDarkMat = new THREE.MeshStandardMaterial({ color: 0x152233, roughness: 0.9, flatShading: true });
-            const featherLightMat = new THREE.MeshStandardMaterial({ color: 0x8ba6c6, roughness: 0.8, flatShading: true });
-            const beakMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.6 });
-            const eyeGlowMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0xff9900, emissiveIntensity: 0.8 });
-            const eyeDarkMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
-
-            // 1. Owl Body (Egg shaped)
-            const bodyGeo = new THREE.SphereGeometry(0.7, 16, 16);
-            bodyGeo.scale(1, 1.4, 0.9);
-            const body = new THREE.Mesh(bodyGeo, featherDarkMat);
-            body.castShadow = true;
-            owlGroup.add(body);
-
-            // Belly (Lighter patch)
-            const bellyGeo = new THREE.SphereGeometry(0.65, 16, 16);
-            bellyGeo.scale(0.9, 1.2, 0.5);
-            const belly = new THREE.Mesh(bellyGeo, featherLightMat);
-            belly.position.set(0, -0.1, 0.45);
-            owlGroup.add(belly);
-
-            // 2. Owl Head Group (Animated separately)
-            const headGroup = new THREE.Group();
-            headGroup.position.set(0, 1.1, 0.1);
-            headGroup.name = "head";
-            
-            // Base Head
-            const headGeo = new THREE.SphereGeometry(0.6, 16, 16);
-            const headBase = new THREE.Mesh(headGeo, featherDarkMat);
-            headBase.castShadow = true;
-            headGroup.add(headBase);
-
-            // Facial Disk (Heart shaped vibe using overlapping spheres)
-            const diskGeo = new THREE.SphereGeometry(0.45, 16, 16);
-            diskGeo.scale(1, 1, 0.3);
-            const leftDisk = new THREE.Mesh(diskGeo, featherLightMat);
-            leftDisk.position.set(-0.25, 0, 0.5);
-            leftDisk.rotation.y = -0.2;
-            const rightDisk = new THREE.Mesh(diskGeo, featherLightMat);
-            rightDisk.position.set(0.25, 0, 0.5);
-            rightDisk.rotation.y = 0.2;
-            headGroup.add(leftDisk, rightDisk);
-
-            // Eyes
-            const eyeRadius = 0.15;
-            const outerEyeGeo = new THREE.SphereGeometry(eyeRadius, 16, 16);
-            const innerEyeGeo = new THREE.SphereGeometry(eyeRadius * 0.6, 16, 16);
-            outerEyeGeo.scale(1, 1, 0.4);
-            innerEyeGeo.scale(1, 1, 0.5);
-
-            const leftEyeOuter = new THREE.Mesh(outerEyeGeo, eyeGlowMat);
-            leftEyeOuter.position.set(-0.25, 0.05, 0.65);
-            const leftEyeInner = new THREE.Mesh(innerEyeGeo, eyeDarkMat);
-            leftEyeInner.position.set(-0.25, 0.05, 0.7);
-            
-            const rightEyeOuter = new THREE.Mesh(outerEyeGeo, eyeGlowMat);
-            rightEyeOuter.position.set(0.25, 0.05, 0.65);
-            const rightEyeInner = new THREE.Mesh(innerEyeGeo, eyeDarkMat);
-            rightEyeInner.position.set(0.25, 0.05, 0.7);
-
-            headGroup.add(leftEyeOuter, leftEyeInner, rightEyeOuter, rightEyeInner);
-
-            // Beak
-            const beakGeo = new THREE.ConeGeometry(0.08, 0.3, 4);
-            const beak = new THREE.Mesh(beakGeo, beakMat);
-            beak.rotation.x = Math.PI / 2 + 0.2; // Pointing down/forward
-            beak.position.set(0, -0.15, 0.7);
-            headGroup.add(beak);
-
-            // Ear Tufts
-            const tuftGeo = new THREE.ConeGeometry(0.15, 0.5, 4);
-            const leftTuft = new THREE.Mesh(tuftGeo, featherDarkMat);
-            leftTuft.position.set(-0.4, 0.5, 0.1);
-            leftTuft.rotation.z = 0.3;
-            leftTuft.rotation.x = -0.2;
-            
-            const rightTuft = new THREE.Mesh(tuftGeo, featherDarkMat);
-            rightTuft.position.set(0.4, 0.5, 0.1);
-            rightTuft.rotation.z = -0.3;
-            rightTuft.rotation.x = -0.2;
-            
-            headGroup.add(leftTuft, rightTuft);
-
-            owlGroup.add(headGroup);
-
-            // 3. Wings
-            const wingGeo = new THREE.SphereGeometry(0.5, 16, 16);
-            wingGeo.scale(0.3, 1.4, 0.8);
-            
-            const leftWing = new THREE.Mesh(wingGeo, featherDarkMat);
-            leftWing.position.set(-0.7, 0, 0);
-            leftWing.rotation.z = 0.2;
-            leftWing.rotation.x = 0.2;
-            leftWing.castShadow = true;
-            
-            const rightWing = new THREE.Mesh(wingGeo, featherDarkMat);
-            rightWing.position.set(0.7, 0, 0);
-            rightWing.rotation.z = -0.2;
-            rightWing.rotation.x = 0.2;
-            rightWing.castShadow = true;
-
-            owlGroup.add(leftWing, rightWing);
-
-            // 4. Tall Perch Pillar
-            const perchMat = new THREE.MeshStandardMaterial({ color: 0x111622, roughness: 0.9, flatShading: true });
-            const perch = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 3, 8), perchMat);
-            perch.position.set(0, -2.2, 0); // Reaches down to the altar
-            perch.castShadow = true;
-            perch.receiveShadow = true;
-            owlGroup.add(perch);
-
-            // Apply userData to all meshes recursively so clicking works perfectly anywhere on the owl
-            owlGroup.traverse((child) => {
-                if (child.isMesh) {
-                    child.userData.isOwl = true;
-                }
-            });
-
-            scene.add(owlGroup);
+    var trunkMat = new THREE.MeshStandardMaterial({ color: 0x0a0c10, roughness: 1 });
+    var leafMat = new THREE.MeshStandardMaterial({ color: 0x051a1a, roughness: 0.8, flatShading: true });
+    for (var i = 0; i < 60; i++) {
+        var a = Math.random() * Math.PI * 2;
+        var d = 22 + Math.random() * 40;
+        var tx = Math.cos(a) * d, tz = Math.sin(a) * d;
+        var gy = (Math.sin(tx * 0.1) * Math.cos(tz * 0.1)) * 2.5 + (Math.sin(tx * 0.05) + Math.cos(tz * 0.05)) * 4;
+        var g = new THREE.Group();
+        g.position.set(tx, gy, tz);
+        var r = 0.4 + Math.random() * 0.8, h = 15 + Math.random() * 15;
+        var trunk = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.5, r, h, 7), trunkMat);
+        trunk.position.y = h / 2;
+        trunk.castShadow = true;
+        g.add(trunk);
+        for (var c = 0; c < 3 + Math.floor(Math.random() * 3); c++) {
+            var s = 3 + Math.random() * 4;
+            var canopy = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 1), leafMat);
+            canopy.position.set((Math.random() - 0.5) * 4, h - 2 + Math.random() * 6, (Math.random() - 0.5) * 4);
+            canopy.scale.y = 0.6 + Math.random() * 0.4;
+            canopy.castShadow = true;
+            g.add(canopy);
         }
+        scene.add(g);
+    }
 
-        function createArchives() {
-            bookGroup = new THREE.Group();
-            scene.add(bookGroup);
-            const numBooks = archiveBooks.length;
-            const radius = 6; 
-            
-            archiveBooks.forEach((data, index) => {
-                const angle = (index / numBooks) * Math.PI * 2 + Math.PI;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                const yOffset = 2.5 + Math.sin(index) * 0.3;
-
-                // 1. Floating Pedestal for the Book
-                const pedMat = new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.8 });
-                const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.5, 0.3, 6), pedMat);
-                pedestal.position.set(x, yOffset - 0.8, z);
-                pedestal.receiveShadow = true;
-                bookGroup.add(pedestal);
-                bookPedestals.push(pedestal); // To animate bobbing
-
-                // 2. The Book (Tome)
-                const coverMat = new THREE.MeshStandardMaterial({ color: 0x0a0f18, roughness: 0.4, metalness: 0.2 });
-                // We keep the emissive pages at index 4 for GSAP compatibility
-                const pagesMat = new THREE.MeshStandardMaterial({ color: data.color, emissive: data.color, emissiveIntensity: 0.6 });
-                
-                // Detailed Book Geometry: Cover is slightly larger than pages
-                const bookWrapper = new THREE.Group(); // Logical container for rotation, but we keep main mesh clickable
-                
-                // The clickable mesh with multi-materials as required by original GSAP logic
-                const materials = [coverMat, coverMat, coverMat, coverMat, pagesMat, coverMat];
-                const bookMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.2), materials);
-                bookMesh.position.set(x, yOffset, z);
-                
-                // Angle books slightly towards center
-                bookMesh.lookAt(0, bookMesh.position.y, 0);
-                // Tilt them slightly for a resting look
-                bookMesh.rotateX(0.2);
-
-                // Embellishment (Spine detail, not clickable, parented to mesh so it scales with it)
-                const spineGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.02, 8);
-                const spineMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6, metalness: 0.5 });
-                const spine = new THREE.Mesh(spineGeo, spineMat);
-                spine.position.set(-0.4, 0, 0); // Left edge
-                bookMesh.add(spine);
-
-                // Add glowing light
-                const bookLight = new THREE.PointLight(data.color, 0.6, 4);
-                bookLight.position.set(0, 0, 0.2); // Just in front of pages
-                bookMesh.add(bookLight);
-
-                // Store UserData
-                bookMesh.userData = { ...data, originalY: bookMesh.position.y, index: index };
-                bookMesh.castShadow = true;
-                
-                bookGroup.add(bookMesh);
-                tomes.push(bookMesh);
-            });
+    var stalkMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.8 });
+    var capMats = [
+        new THREE.MeshStandardMaterial({ color: 0x38b6ff, emissive: 0x38b6ff, emissiveIntensity: 0.5 }),
+        new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x4ade80, emissiveIntensity: 0.5 }),
+        new THREE.MeshStandardMaterial({ color: 0xa78bfa, emissive: 0xa78bfa, emissiveIntensity: 0.5 })
+    ];
+    for (var i = 0; i < 30; i++) {
+        var ma = Math.random() * Math.PI * 2, md = 8 + Math.random() * 15;
+        var mg = new THREE.Group();
+        mg.position.set(Math.cos(ma) * md, 0.1, Math.sin(ma) * md);
+        var stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.4, 8), stalkMat);
+        stalk.position.y = 0.2;
+        mg.add(stalk);
+        var cm = capMats[Math.floor(Math.random() * capMats.length)];
+        var cap = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.2, 8), cm);
+        cap.position.y = 0.4;
+        mg.add(cap);
+        if (Math.random() > 0.5) {
+            var ml = new THREE.PointLight(cm.color, 0.2, 2);
+            ml.position.y = 0.5;
+            mg.add(ml);
         }
+        scene.add(mg);
+    }
 
-        function createParticles() {
-            // Fireflies
-            const fireflyGeo = new THREE.BufferGeometry();
-            const posArray = new Float32Array(300 * 3);
-            const phaseArray = new Float32Array(300);
-            for(let i = 0; i < 900; i+=3) {
-                posArray[i] = (Math.random() - 0.5) * 60; 
-                posArray[i+1] = Math.random() * 15; 
-                posArray[i+2] = (Math.random() - 0.5) * 60; 
-                phaseArray[i/3] = Math.random() * Math.PI * 2;
-            }
-            fireflyGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            fireflyGeo.setAttribute('phase', new THREE.BufferAttribute(phaseArray, 1));
-            
-            // Use an additive sprite-like look
-            const fireflyMat = new THREE.PointsMaterial({ 
-                size: 0.2, 
-                color: 0x88ccff, 
-                transparent: true, 
-                opacity: 0.8, 
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            fireflies = new THREE.Points(fireflyGeo, fireflyMat);
-            scene.add(fireflies);
+    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true });
+    var altar = new THREE.Group();
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(4, 4.5, 0.6, 16), stoneMat);
+    base.position.y = 0.3; base.receiveShadow = true;
+    altar.add(base);
+    var step = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.8, 0.4, 16), stoneMat);
+    step.position.y = 0.8; step.receiveShadow = true;
+    altar.add(step);
+    var ring = new THREE.Mesh(
+        new THREE.TorusGeometry(4.8, 0.05, 8, 32),
+        new THREE.MeshBasicMaterial({ color: 0x38b6ff, transparent: true, opacity: 0.6 })
+    );
+    ring.position.y = 0.5; ring.rotation.x = Math.PI / 2; ring.name = 'magicRing';
+    altar.add(ring);
+    scene.add(altar);
+}
 
-            // Magic Dust (Smaller, denser, floating up near altar)
-            const dustGeo = new THREE.BufferGeometry();
-            const dustPos = new Float32Array(500 * 3);
-            for(let i=0; i<1500; i+=3){
-                const radius = Math.random() * 8;
-                const angle = Math.random() * Math.PI * 2;
-                dustPos[i] = Math.cos(angle) * radius;
-                dustPos[i+1] = Math.random() * 8; // Height
-                dustPos[i+2] = Math.sin(angle) * radius;
-            }
-            dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-            const dustMat = new THREE.PointsMaterial({
-                size: 0.05,
-                color: 0x38b6ff,
-                transparent: true,
-                opacity: 0.5,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-            magicDust = new THREE.Points(dustGeo, dustMat);
-            scene.add(magicDust);
+// ── Owl ───────────────────────────────────────────────────────────────────────
+function buildOwl() {
+    owlGroup = new THREE.Group();
+    owlGroup.position.set(0, 3.5, -1.5);
+
+    var darkMat = new THREE.MeshStandardMaterial({ color: 0x152233, roughness: 0.9, flatShading: true });
+    var lightMat = new THREE.MeshStandardMaterial({ color: 0x8ba6c6, roughness: 0.8, flatShading: true });
+    var beakMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.6 });
+    var eyeGlow = new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0xff9900, emissiveIntensity: 0.8 });
+    var eyeDark = new THREE.MeshBasicMaterial({ color: 0x050505 });
+
+    var bodyGeo = new THREE.SphereGeometry(0.7, 16, 16);
+    bodyGeo.scale(1, 1.4, 0.9);
+    var body = new THREE.Mesh(bodyGeo, darkMat);
+    body.castShadow = true;
+    owlGroup.add(body);
+
+    var bellyGeo = new THREE.SphereGeometry(0.65, 16, 16);
+    bellyGeo.scale(0.9, 1.2, 0.5);
+    var belly = new THREE.Mesh(bellyGeo, lightMat);
+    belly.position.set(0, -0.1, 0.45);
+    owlGroup.add(belly);
+
+    var head = new THREE.Group();
+    head.position.set(0, 1.1, 0.1);
+    head.name = 'head';
+    var headBase = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), darkMat);
+    headBase.castShadow = true;
+    head.add(headBase);
+
+    var ldGeo = new THREE.SphereGeometry(0.45, 16, 16); ldGeo.scale(1, 1, 0.3);
+    var ld = new THREE.Mesh(ldGeo, lightMat); ld.position.set(-0.25, 0, 0.5); ld.rotation.y = -0.2; head.add(ld);
+    var rdGeo = new THREE.SphereGeometry(0.45, 16, 16); rdGeo.scale(1, 1, 0.3);
+    var rd = new THREE.Mesh(rdGeo, lightMat); rd.position.set(0.25, 0, 0.5); rd.rotation.y = 0.2; head.add(rd);
+
+    [-0.25, 0.25].forEach(function(ex) {
+        var og = new THREE.SphereGeometry(0.15, 16, 16); og.scale(1, 1, 0.4);
+        var outer = new THREE.Mesh(og, eyeGlow); outer.position.set(ex, 0.05, 0.65); head.add(outer);
+        var ig = new THREE.SphereGeometry(0.09, 16, 16); ig.scale(1, 1, 0.5);
+        var inner = new THREE.Mesh(ig, eyeDark); inner.position.set(ex, 0.05, 0.7); head.add(inner);
+    });
+
+    var beak = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 4), beakMat);
+    beak.rotation.x = Math.PI / 2 + 0.2; beak.position.set(0, -0.15, 0.7); head.add(beak);
+
+    var lt = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), darkMat);
+    lt.position.set(-0.4, 0.5, 0.1); lt.rotation.z = 0.3; lt.rotation.x = -0.2; head.add(lt);
+    var rt = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), darkMat);
+    rt.position.set(0.4, 0.5, 0.1); rt.rotation.z = -0.3; rt.rotation.x = -0.2; head.add(rt);
+
+    owlGroup.add(head);
+
+    [-0.7, 0.7].forEach(function(wx, idx) {
+        var wg = new THREE.SphereGeometry(0.5, 16, 16); wg.scale(0.3, 1.4, 0.8);
+        var wing = new THREE.Mesh(wg, darkMat);
+        wing.position.set(wx, 0, 0);
+        wing.rotation.z = idx === 0 ? 0.2 : -0.2;
+        wing.rotation.x = 0.2;
+        wing.castShadow = true;
+        owlGroup.add(wing);
+    });
+
+    var perch = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.6, 3, 8),
+        new THREE.MeshStandardMaterial({ color: 0x111622, roughness: 0.9, flatShading: true })
+    );
+    perch.position.set(0, -2.2, 0); perch.castShadow = true;
+    owlGroup.add(perch);
+
+    owlGroup.traverse(function(c) { if (c.isMesh) c.userData.isOwl = true; });
+    scene.add(owlGroup);
+}
+
+// ── Crystals ──────────────────────────────────────────────────────────────────
+function buildCrystals() {
+    var RADIUS = 5.5;
+    for (var i = 0; i < CRYSTAL_COUNT; i++) {
+        var t = i / (CRYSTAL_COUNT - 1);
+        var angle = (t - 0.5) * (Math.PI * 1.5) + Math.PI;
+        var cx = Math.cos(angle) * RADIUS;
+        var cz = Math.sin(angle) * RADIUS;
+
+        var ped = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.3, 0.22, 0.22, 6),
+            new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true })
+        );
+        ped.position.set(cx, 1.08, cz);
+        ped.receiveShadow = true;
+        scene.add(ped);
+
+        var geo = new THREE.OctahedronGeometry(0.42, 0);
+        var mat = new THREE.MeshStandardMaterial({
+            color: 0x38b6ff, emissive: 0x38b6ff,
+            emissiveIntensity: 0.1, transparent: true,
+            opacity: 0.2, metalness: 0.05, roughness: 0.05
+        });
+        var mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(cx, 2.2, cz);
+        mesh.userData = { index: i, checkpoint: null, baseScale: 1.0, originalY: 2.2 };
+        mesh.castShadow = true;
+        scene.add(mesh);
+        crystals.push(mesh);
+    }
+}
+
+function updateCrystals() {
+    var counts = displayedCheckpoints.map(function(cp) { return (cp.transactions || []).length; });
+    var maxTx = Math.max.apply(null, counts.concat([1]));
+    crystals.forEach(function(crystal, i) {
+        var cp = displayedCheckpoints[i];
+        if (!cp) {
+            crystal.material.opacity = 0.12;
+            crystal.material.emissiveIntensity = 0.04;
+            crystal.userData.checkpoint = null;
+            return;
         }
+        crystal.userData.checkpoint = cp;
+        var ratio = counts[i] / maxTx;
+        var base = 0.7 + ratio * 0.65;
+        crystal.userData.baseScale = base;
+        crystal.scale.setScalar(base);
+        crystal.material.opacity = 0.45 + ratio * 0.45;
+        crystal.material.emissiveIntensity = 0.35 + ratio * 1.2;
+    });
+}
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+// ── Particles ─────────────────────────────────────────────────────────────────
+function buildParticles() {
+    var fGeo = new THREE.BufferGeometry();
+    var fPos = new Float32Array(300 * 3);
+    var fPhase = new Float32Array(300);
+    for (var i = 0; i < 900; i += 3) {
+        fPos[i] = (Math.random() - 0.5) * 60;
+        fPos[i + 1] = Math.random() * 15;
+        fPos[i + 2] = (Math.random() - 0.5) * 60;
+        fPhase[i / 3] = Math.random() * Math.PI * 2;
+    }
+    fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+    fGeo.setAttribute('phase', new THREE.BufferAttribute(fPhase, 1));
+    fireflies = new THREE.Points(fGeo, new THREE.PointsMaterial({
+        size: 0.2, color: 0x88ccff, transparent: true,
+        opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    scene.add(fireflies);
 
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        }
+    var dGeo = new THREE.BufferGeometry();
+    var dPos = new Float32Array(500 * 3);
+    for (var i = 0; i < 1500; i += 3) {
+        var dr = Math.random() * 8, da = Math.random() * Math.PI * 2;
+        dPos[i] = Math.cos(da) * dr; dPos[i + 1] = Math.random() * 8; dPos[i + 2] = Math.sin(da) * dr;
+    }
+    dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+    magicDust = new THREE.Points(dGeo, new THREE.PointsMaterial({
+        size: 0.05, color: 0x38b6ff, transparent: true,
+        opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    scene.add(magicDust);
+}
 
-        function onClick(event) {
-            if(event.target.closest('.pointer-events-auto')) return;
-            raycaster.setFromCamera(mouse, camera);
-            
-            // Check books first
-            const bookIntersects = raycaster.intersectObjects(tomes);
-            if (bookIntersects.length > 0) {
-                // Ensure we get the main mesh, not the spine
-                let object = bookIntersects[0].object;
-                if(object.parent && object.parent !== bookGroup && object.parent.userData.title) {
-                    object = object.parent;
-                }
-                selectTome(object);
-                return;
-            }
+// ── Data Loading ──────────────────────────────────────────────────────────────
+async function loadInitialData() {
+    try {
+        document.getElementById('loading-status').innerText = 'Fetching latest checkpoints from Sui Mainnet...';
+        latestSeq = parseInt(await rpc('sui_getLatestCheckpointSequenceNumber'));
 
-            // Check Owl (recursive true)
-            const owlIntersects = raycaster.intersectObjects(owlGroup.children, true);
-            if(owlIntersects.length > 0 && owlIntersects[0].object.userData.isOwl) {
-                toggleSearchMenu();
-            }
-        }
+        var result = await rpc('suix_getCheckpoints', [null, CRYSTAL_COUNT, true]);
+        displayedCheckpoints = result.data;
+        updateCrystals();
 
-        function onTouchStart(event) {
-            if(event.target.closest('.pointer-events-auto')) return;
-            if (event.touches.length > 0) {
-                mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
-                onClick(event); 
-            }
-        }
+        document.getElementById('live-ticker').innerText = latestSeq.toLocaleString();
+        startLiveTicker();
 
-        function toggleSearchMenu() {
-            const menu = document.getElementById('search-menu');
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                document.getElementById('master-search').focus();
-            } else {
-                menu.classList.add('hidden');
-            }
-        }
+        document.getElementById('loading').style.opacity = '0';
+        setTimeout(function() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('ui-layer').style.opacity = '1';
+            typeWriter(CRYSTAL_COUNT + ' checkpoints crystallized from the network. Click a crystal to decode its contents, or click me to seek by number.');
+        }, 1000);
+    } catch (err) {
+        document.getElementById('loading-status').innerText = 'RPC error — retrying in 3s...';
+        setTimeout(loadInitialData, 3000);
+    }
+}
 
-        function selectTome(tome, targetEpoch = null) {
-            if(selectedBook === tome && !targetEpoch) return;
-
-            if(selectedBook && selectedBook !== tome) {
-                gsap.to(selectedBook.scale, {x: 1, y: 1, z: 1, duration: 0.5});
-                // Compatibility preserved:
-                selectedBook.material[4].emissiveIntensity = 0.6;
-            }
-
-            selectedBook = tome;
-            gsap.to(selectedBook.scale, {x: 1.4, y: 1.4, z: 1.4, duration: 0.5, ease: "back.out(1.7)"});
-            selectedBook.material[4].emissiveIntensity = 2.0;
-
-            const data = selectedBook.userData;
-            document.getElementById('info-epoch').innerText = data.title;
-            document.getElementById('info-desc').innerText = data.epochRange;
-
-            const tbody = document.getElementById('ledger-body');
-            tbody.innerHTML = '';
-            
-            data.items.forEach(ep => {
-                const tr = document.createElement('tr');
-                tr.className = 'ledger-row border-b border-blue-500/10';
-                tr.id = `epoch-row-${ep.epoch}`;
-                
-                tr.innerHTML = `
-                    <td class="py-3 px-2 md:px-4 font-mono">Epoch ${ep.epoch}</td>
-                    <td class="py-3 px-2 md:px-4 hidden sm:table-cell text-gray-400">${ep.size}</td>
-                    <td class="py-3 px-2 md:px-4 text-center">
-                        <button onclick="openEpochModal(${ep.epoch})" class="text-blue-300 hover:text-white bg-blue-900/30 hover:bg-blue-600/50 p-1.5 md:p-2 rounded-lg transition-colors shadow-inner" title="View Details">
-                            👁️
-                        </button>
-                    </td>
-                    <td class="py-3 px-2 md:px-4 text-right">
-                        <button onclick="alert('Initiating download via AWS CLI:\\naws s3 cp s3://sui-checkpoint-archive/epoch_${ep.epoch} . --recursive --no-sign-request')" class="text-gray-400 hover:text-white transition-colors p-1.5 md:p-2 hover:bg-blue-600/30 rounded-lg">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            let dialogue = targetEpoch !== null 
-                ? `I've opened the ${data.title} directly to Epoch ${targetEpoch} for you.` 
-                : `You've unsealed the ${data.title}. ${data.desc}`;
-            typeWriterEffect(dialogue);
-
-            document.getElementById('info-panel').classList.remove('hidden');
-            document.getElementById('info-panel').classList.add('flex');
-            setTimeout(() => { document.getElementById('info-panel').style.transform = 'translateX(0)'; }, 10);
-            
-            // Camera movement
-            const targetPos = new THREE.Vector3();
-            tome.getWorldPosition(targetPos);
-            gsap.to(controls.target, { x: targetPos.x * 0.7, y: targetPos.y - 1, z: targetPos.z * 0.7, duration: 1.5, ease: "power2.out" });
-
-            if (targetEpoch !== null) {
-                setTimeout(() => {
-                    const row = document.getElementById(`epoch-row-${targetEpoch}`);
-                    if (row) {
-                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        row.classList.add('highlight-row');
-                        setTimeout(() => row.classList.remove('highlight-row'), 3000); 
-                    }
-                }, 600); 
-            }
-        }
-
-        function closeInfoPanel() {
-            const panel = document.getElementById('info-panel');
-            panel.style.transform = 'translateX(120%)';
-            setTimeout(() => { panel.classList.add('hidden'); panel.classList.remove('flex'); }, 500);
-            
-            if(selectedBook) {
-                gsap.to(selectedBook.scale, {x: 1, y: 1, z: 1, duration: 0.5});
-                selectedBook.material[4].emissiveIntensity = 0.6;
-                selectedBook = null;
-            }
-            typeWriterEffect("Feel free to examine another tome. The archives hold many secrets.");
-            gsap.to(controls.target, {x: 0, y: 2, z: 0, duration: 1});
-        }
-
-        let typeWriterTimeout;
-        function typeWriterEffect(text) {
-            const el = document.getElementById('dialogue-text');
-            el.innerHTML = '';
-            clearTimeout(typeWriterTimeout);
-            let i = 0;
-            function type() {
-                if (i < text.length) {
-                    el.innerHTML += text.charAt(i);
-                    i++;
-                    typeWriterTimeout = setTimeout(type, 30);
+function startLiveTicker() {
+    setInterval(async function() {
+        try {
+            var seq = parseInt(await rpc('sui_getLatestCheckpointSequenceNumber'));
+            if (seq > latestSeq) {
+                latestSeq = seq;
+                document.getElementById('live-ticker').innerText = latestSeq.toLocaleString();
+                if (selectedCpSeq !== null) {
+                    document.getElementById('btn-next').disabled = selectedCpSeq >= latestSeq;
                 }
             }
-            type();
+        } catch(e) {}
+    }, 4000);
+}
+
+// ── Crystal Selection ─────────────────────────────────────────────────────────
+async function selectCrystal(crystal) {
+    if (!crystal.userData.checkpoint || isNavigating) return;
+
+    if (selectedCrystal && selectedCrystal !== crystal) {
+        var prev = selectedCrystal;
+        gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
+        prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
+    }
+
+    selectedCrystal = crystal;
+    gsap.to(crystal.scale, {
+        x: crystal.userData.baseScale * 1.6,
+        y: crystal.userData.baseScale * 1.6,
+        z: crystal.userData.baseScale * 1.6,
+        duration: 0.5, ease: 'back.out(1.7)'
+    });
+    crystal.material.emissiveIntensity = 3.5;
+
+    var cp = crystal.userData.checkpoint;
+    selectedCpSeq = parseInt(cp.sequenceNumber);
+
+    var targetPos = new THREE.Vector3();
+    crystal.getWorldPosition(targetPos);
+    gsap.to(controls.target, { x: targetPos.x * 0.5, y: targetPos.y - 0.5, z: targetPos.z * 0.5, duration: 1.2, ease: 'power2.out' });
+
+    openPanel(cp);
+    fetchAndRenderTxs(cp);
+}
+
+async function openCheckpointBySeq(seq) {
+    if (isNavigating) return;
+    isNavigating = true;
+    try {
+        var cp = await rpc('sui_getCheckpoint', [seq.toString()]);
+        selectedCpSeq = seq;
+
+        if (selectedCrystal) {
+            var prev = selectedCrystal;
+            gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
+            prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
+            selectedCrystal = null;
         }
 
-        let currentEpochData = null;
-
-        function openEpochModal(epochNumber) {
-            currentEpochData = allEpochs.find(e => e.epoch === epochNumber);
-            document.getElementById('modal-epoch-title').innerText = `Epoch ${currentEpochData.epoch} Details`;
-            
-            document.getElementById('modal-story-text').innerHTML = `
-                In the era between <span class="text-blue-300 font-bold">${currentEpochData.dateRange.split(' to ')[0]}</span> and <span class="text-blue-300 font-bold">${currentEpochData.dateRange.split(' to ')[1]}</span>, 
-                the Sui network processed over <strong class="text-white">${(currentEpochData.txCount / 1000000).toFixed(1)} million</strong> transactions. <br><br>
-                A council of <strong class="text-white">${currentEpochData.valCount} Validators</strong> stood guard over this epoch, cryptographically sealing checkpoints from 
-                <span class="font-mono text-xs text-blue-400 bg-blue-900/30 px-1 rounded">${currentEpochData.checkpoints}</span>.
-            `;
-
-            const devData = {
-                epoch: currentEpochData.epoch,
-                timestamp_start: currentEpochData.dateRange.split(' to ')[0] + "T00:00:00Z",
-                timestamp_end: currentEpochData.dateRange.split(' to ')[1] + "T23:59:59Z",
-                checkpoints_inclusive: currentEpochData.checkpoints.split(' - ').map(Number),
-                validator_committee_size: currentEpochData.valCount,
-                total_transactions: currentEpochData.txCount,
-                storage_fund_balance: parseFloat(currentEpochData.gasFund),
-                bls_signatures_valid: true
-            };
-            document.getElementById('modal-dev-json').innerText = JSON.stringify(devData, null, 2);
-
-            switchTab('story');
-            document.getElementById('epoch-modal').classList.remove('hidden');
+        var match = crystals.find(function(c) {
+            return c.userData.checkpoint && parseInt(c.userData.checkpoint.sequenceNumber) === seq;
+        });
+        if (match) {
+            selectedCrystal = match;
+            gsap.to(match.scale, { x: match.userData.baseScale * 1.6, y: match.userData.baseScale * 1.6, z: match.userData.baseScale * 1.6, duration: 0.5, ease: 'back.out(1.7)' });
+            match.material.emissiveIntensity = 3.5;
         }
 
-        function closeEpochModal() {
-            document.getElementById('epoch-modal').classList.add('hidden');
+        openPanel(cp);
+        fetchAndRenderTxs(cp);
+    } catch(err) {
+        typeWriter('The archive could not locate checkpoint #' + seq.toLocaleString() + '. It may not exist yet.');
+    } finally {
+        isNavigating = false;
+    }
+}
+
+// ── Panel ─────────────────────────────────────────────────────────────────────
+function openPanel(cp) {
+    var seq = parseInt(cp.sequenceNumber);
+    var ts = cp.timestampMs ? new Date(parseInt(cp.timestampMs)).toUTCString() : '—';
+    var txCount = (cp.transactions || []).length;
+
+    document.getElementById('cp-seq').innerText = 'Checkpoint #' + seq.toLocaleString();
+    document.getElementById('cp-meta').innerText = 'Epoch ' + cp.epoch + '  ·  ' + ts;
+    document.getElementById('stat-tx').innerText = txCount.toLocaleString();
+    document.getElementById('stat-user').innerText = '...';
+    document.getElementById('stat-sys').innerText = '...';
+    document.getElementById('cp-raw-json').innerText = JSON.stringify(cp, null, 2);
+    document.getElementById('tx-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-6 animate-pulse">Decoding transactions...</div>';
+    document.getElementById('btn-prev').disabled = seq <= 0;
+    document.getElementById('btn-next').disabled = seq >= latestSeq;
+
+    switchTab('transactions');
+
+    var panel = document.getElementById('info-panel');
+    panel.classList.remove('hidden');
+    panel.classList.add('flex');
+    requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
+
+    typeWriter('Checkpoint #' + seq.toLocaleString() + ' — Epoch ' + cp.epoch + ' — ' + txCount + ' transactions sealed in this crystal.');
+}
+
+function closeInfoPanel() {
+    var panel = document.getElementById('info-panel');
+    panel.style.transform = 'translateX(120%)';
+    setTimeout(function() { panel.classList.add('hidden'); panel.classList.remove('flex'); }, 500);
+
+    if (selectedCrystal) {
+        var prev = selectedCrystal;
+        gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
+        prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
+        selectedCrystal = null;
+    }
+    selectedCpSeq = null;
+    gsap.to(controls.target, { x: 0, y: 2, z: 0, duration: 1 });
+    typeWriter('The crystal dims. Click another to read its history, or click me to seek a specific checkpoint.');
+}
+
+function switchTab(tab) {
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function(b) { b.classList.remove('active', 'text-blue-400'); });
+    if (tab === 'transactions') {
+        btns[0].classList.add('active', 'text-blue-400');
+        document.getElementById('tab-transactions').classList.remove('hidden');
+        document.getElementById('tab-raw').classList.add('hidden');
+    } else {
+        btns[1].classList.add('active', 'text-blue-400');
+        document.getElementById('tab-raw').classList.remove('hidden');
+        document.getElementById('tab-transactions').classList.add('hidden');
+    }
+}
+
+// ── Transaction Decoding ──────────────────────────────────────────────────────
+async function fetchAndRenderTxs(cp) {
+    var digests = (cp.transactions || []).slice(0, 25);
+    if (digests.length === 0) {
+        document.getElementById('tx-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-6">No transactions in this checkpoint.</div>';
+        document.getElementById('stat-user').innerText = '0';
+        document.getElementById('stat-sys').innerText = '0';
+        return;
+    }
+    try {
+        var txs = await rpc('sui_multiGetTransactionBlocks', [digests, {
+            showInput: true, showEffects: true, showEvents: false, showObjectChanges: false
+        }]);
+        renderTxList(cp, txs);
+    } catch(err) {
+        document.getElementById('tx-list').innerHTML = '<div class="text-center text-red-400 text-sm py-6">Failed to decode transactions.</div>';
+    }
+}
+
+function renderTxList(cp, txs) {
+    var container = document.getElementById('tx-list');
+    container.innerHTML = '';
+
+    var userCount = 0, sysCount = 0;
+    var kindCounts = {};
+    txs.forEach(function(tx) {
+        var k = getTxKind(tx);
+        kindCounts[k] = (kindCounts[k] || 0) + 1;
+        if (k === 'Programmable') userCount++; else sysCount++;
+    });
+
+    document.getElementById('stat-user').innerText = userCount.toLocaleString();
+    document.getElementById('stat-sys').innerText = sysCount.toLocaleString();
+
+    var totalInCp = (cp.transactions || []).length;
+
+    // Kind summary pills
+    var summary = document.createElement('div');
+    summary.className = 'flex flex-wrap gap-1.5 mb-3 pb-2 border-b border-blue-500/20';
+
+    Object.keys(kindCounts).forEach(function(kind) {
+        var pill = document.createElement('span');
+        pill.className = 'tx-pill ' + kindPillStyle(kind);
+        pill.innerText = kindEmoji(kind) + ' ' + kindLabel(kind) + ': ' + kindCounts[kind];
+        summary.appendChild(pill);
+    });
+
+    if (totalInCp > txs.length) {
+        var more = document.createElement('span');
+        more.className = 'tx-pill bg-gray-700/50 text-gray-400';
+        more.innerText = '+' + (totalInCp - txs.length).toLocaleString() + ' more';
+        summary.appendChild(more);
+    }
+    container.appendChild(summary);
+
+    // Transaction rows
+    txs.forEach(function(tx) {
+        var kind = getTxKind(tx);
+        var ok = tx.effects && tx.effects.status && tx.effects.status.status === 'success';
+        var digest = tx.digest || '—';
+        var shortD = digest.length > 12 ? digest.slice(0, 8) + '…' + digest.slice(-4) : digest;
+        var label = getTxLabel(tx, kind);
+        var sender = tx.transaction && tx.transaction.data && tx.transaction.data.sender;
+        var shortSender = sender ? sender.slice(0, 6) + '…' + sender.slice(-4) : '';
+
+        var row = document.createElement('a');
+        row.className = 'tx-row';
+        row.href = 'https://suiscan.xyz/mainnet/tx/' + digest;
+        row.target = '_blank';
+        row.title = digest + '\n' + label;
+
+        var statusSpan = document.createElement('span');
+        statusSpan.className = 'text-sm shrink-0';
+        statusSpan.innerText = ok ? '✅' : '❌';
+        row.appendChild(statusSpan);
+
+        var digestSpan = document.createElement('span');
+        digestSpan.className = 'font-mono text-blue-300 text-xs shrink-0';
+        digestSpan.style.width = '96px';
+        digestSpan.innerText = shortD;
+        row.appendChild(digestSpan);
+
+        var emojiSpan = document.createElement('span');
+        emojiSpan.className = 'text-sm shrink-0';
+        emojiSpan.innerText = kindEmoji(kind);
+        row.appendChild(emojiSpan);
+
+        var labelSpan = document.createElement('span');
+        labelSpan.className = 'text-gray-200 text-xs flex-1';
+        labelSpan.style.overflow = 'hidden';
+        labelSpan.style.textOverflow = 'ellipsis';
+        labelSpan.style.whiteSpace = 'nowrap';
+        labelSpan.innerText = label;
+        row.appendChild(labelSpan);
+
+        if (shortSender) {
+            var senderSpan = document.createElement('span');
+            senderSpan.className = 'text-gray-600 font-mono text-[10px] shrink-0 hidden md:block';
+            senderSpan.innerText = shortSender;
+            row.appendChild(senderSpan);
         }
 
-        function switchTab(tab) {
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(t => t.classList.remove('active', 'text-blue-400'));
-            
-            if(tab === 'story') {
-                tabs[0].classList.add('active', 'text-blue-400');
-                document.getElementById('tab-content-story').classList.remove('hidden');
-                document.getElementById('tab-content-dev').classList.add('hidden');
-            } else {
-                tabs[1].classList.add('active', 'text-blue-400');
-                document.getElementById('tab-content-dev').classList.remove('hidden');
-                document.getElementById('tab-content-story').classList.add('hidden');
+        var arrowSpan = document.createElement('span');
+        arrowSpan.className = 'text-gray-600 text-xs shrink-0';
+        arrowSpan.innerText = '↗';
+        row.appendChild(arrowSpan);
+
+        container.appendChild(row);
+    });
+}
+
+function getTxKind(tx) {
+    var kind = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction && tx.transaction.data.transaction.kind;
+    if (!kind) return 'Unknown';
+    if (typeof kind === 'string') return kind;
+    if (kind.ProgrammableTransaction !== undefined) return 'Programmable';
+    if (kind.ConsensusCommitPrologue !== undefined || kind.ConsensusCommitPrologueV2 !== undefined) return 'Consensus';
+    if (kind.AuthenticatorStateUpdate !== undefined) return 'AuthState';
+    if (kind.EndOfEpochTransaction !== undefined) return 'EndOfEpoch';
+    if (kind.Genesis !== undefined) return 'Genesis';
+    var keys = Object.keys(kind);
+    return keys.length > 0 ? keys[0] : 'Unknown';
+}
+
+function getTxLabel(tx, kind) {
+    if (kind === 'Programmable') {
+        var txns = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction &&
+                   tx.transaction.data.transaction.kind &&
+                   tx.transaction.data.transaction.kind.ProgrammableTransaction &&
+                   tx.transaction.data.transaction.kind.ProgrammableTransaction.transactions;
+        if (txns && txns.length > 0) {
+            var first = txns[0];
+            if (first.MoveCall) {
+                var mc = first.MoveCall;
+                var pkgShort = mc.package ? mc.package.slice(0, 6) + '…' : '?';
+                return pkgShort + '::' + mc.module + '::' + mc.function;
             }
+            if (first.TransferObjects) return 'Transfer Objects (' + txns.length + ' op' + (txns.length > 1 ? 's' : '') + ')';
+            if (first.SplitCoins) return 'Split Coins';
+            if (first.MergeCoins) return 'Merge Coins';
+            if (first.Publish) return 'Publish Package';
+            if (first.Upgrade) return 'Upgrade Package';
+            var k = Object.keys(first)[0];
+            return k || 'Programmable';
         }
+        return 'Programmable Transaction';
+    }
+    var labels = { Consensus: 'Consensus Commit Prologue', AuthState: 'Authenticator State Update', EndOfEpoch: 'End of Epoch', Genesis: 'Genesis Transaction' };
+    return labels[kind] || kind;
+}
 
-        function openVerifyModal(query) {
-            toggleSearchMenu(); 
-            document.getElementById('verify-hash').innerText = query.startsWith('0x') ? `Digest: ${query}` : `Sequence: #${parseInt(query).toLocaleString()}`;
-            
-            document.getElementById('v-epoch').innerText = Math.floor(Math.random() * 500);
-            document.getElementById('v-tx').innerText = Math.floor(Math.random() * 5000).toLocaleString();
-            document.getElementById('checkpoint-modal').classList.remove('hidden');
-        }
+function kindEmoji(k) {
+    var map = { Programmable: '🔵', Consensus: '⚙️', AuthState: '🔐', EndOfEpoch: '⏚️', Genesis: '🌱' };
+    return map[k] || '❓';
+}
 
-        function closeVerifyModal() {
-            document.getElementById('checkpoint-modal').classList.add('hidden');
-        }
+function kindLabel(k) {
+    var map = { Programmable: 'User', Consensus: 'Consensus', AuthState: 'Auth', EndOfEpoch: 'Epoch End', Genesis: 'Genesis' };
+    return map[k] || k;
+}
 
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = clock.getElapsedTime();
-            controls.update();
+function kindPillStyle(k) {
+    var styles = {
+        Programmable: 'bg-blue-900/50 text-blue-300 border border-blue-500/30',
+        Consensus: 'bg-purple-900/50 text-purple-300 border border-purple-500/30',
+        AuthState: 'bg-yellow-900/50 text-yellow-300 border border-yellow-500/30',
+        EndOfEpoch: 'bg-red-900/50 text-red-300 border border-red-500/30',
+        Genesis: 'bg-green-900/50 text-green-300 border border-green-500/30'
+    };
+    return styles[k] || 'bg-gray-700/50 text-gray-300';
+}
 
-            // Raycasting for Hover Effects
-            raycaster.setFromCamera(mouse, camera);
-            
-            // Check books and owl recursively
-            const objectsToCheck = [...tomes];
-            if(owlGroup) objectsToCheck.push(owlGroup);
-            const intersects = raycaster.intersectObjects(objectsToCheck, true); 
+// ── Navigation ────────────────────────────────────────────────────────────────
+async function navigateCheckpoint(delta) {
+    if (selectedCpSeq === null || isNavigating) return;
+    var next = selectedCpSeq + delta;
+    if (next < 0 || next > latestSeq) return;
+    await openCheckpointBySeq(next);
+}
 
-            if (intersects.length > 0) {
-                let object = intersects[0].object;
-                
-                // If it's a child of a book (like the spine), get the parent
-                if(object.parent && object.parent !== bookGroup && object.parent.userData.title) {
-                    object = object.parent;
-                }
+function toggleSearchMenu() {
+    var m = document.getElementById('search-menu');
+    if (m.classList.contains('hidden')) {
+        m.classList.remove('hidden');
+        setTimeout(function() { document.getElementById('master-search').focus(); }, 50);
+    } else {
+        m.classList.add('hidden');
+    }
+}
 
-                if (object.userData.isOwl || (object.parent && object.parent.userData.isOwl)) {
-                    document.body.style.cursor = 'pointer';
-                    if(hoveredBook && selectedBook !== hoveredBook) {
-                        gsap.to(hoveredBook.scale, {x: 1, y: 1, z: 1, duration: 0.2});
-                        hoveredBook = null;
-                    }
-                } 
-                else if (object.userData.title) { // It's a book
-                    document.body.style.cursor = 'pointer';
-                    if(hoveredBook !== object && selectedBook !== object) {
-                        if(hoveredBook && selectedBook !== hoveredBook) gsap.to(hoveredBook.scale, {x: 1, y: 1, z: 1, duration: 0.2});
-                        hoveredBook = object;
-                        gsap.to(hoveredBook.scale, {x: 1.1, y: 1.1, z: 1.1, duration: 0.2});
-                    }
-                } else {
-                    document.body.style.cursor = 'default';
-                }
+async function searchCheckpoint() {
+    var val = parseInt(document.getElementById('master-search').value);
+    var err = document.getElementById('search-error');
+    if (isNaN(val) || val < 0) { err.classList.remove('hidden'); return; }
+    err.classList.add('hidden');
+    toggleSearchMenu();
+    document.getElementById('master-search').value = '';
+    await openCheckpointBySeq(val);
+}
+
+// ── Scene Click ───────────────────────────────────────────────────────────────
+function onSceneClick(event) {
+    if (event.target.closest('.pointer-events-auto')) return;
+    raycaster.setFromCamera(mouse, camera);
+
+    var hits = raycaster.intersectObjects(crystals);
+    if (hits.length > 0) { selectCrystal(hits[0].object); return; }
+
+    if (owlGroup) {
+        var owlHits = raycaster.intersectObjects(owlGroup.children, true);
+        if (owlHits.length > 0 && owlHits[0].object.userData.isOwl) toggleSearchMenu();
+    }
+}
+
+// ── Typewriter ────────────────────────────────────────────────────────────────
+var twTimeout;
+function typeWriter(text) {
+    var el = document.getElementById('dialogue-text');
+    el.innerHTML = '';
+    clearTimeout(twTimeout);
+    var i = 0;
+    function tick() {
+        if (i < text.length) { el.innerHTML += text.charAt(i++); twTimeout = setTimeout(tick, 20); }
+    }
+    tick();
+}
+
+// ── Animation Loop ────────────────────────────────────────────────────────────
+function animate() {
+    requestAnimationFrame(animate);
+    var t = clock.getElapsedTime();
+    controls.update();
+
+    raycaster.setFromCamera(mouse, camera);
+    var allObjects = crystals.slice();
+    if (owlGroup) owlGroup.children.forEach(function(c) { allObjects.push(c); });
+    var hits = raycaster.intersectObjects(allObjects, true);
+
+    var newHovered = null;
+    if (hits.length > 0) {
+        var obj = hits[0].object;
+        var isOwl = obj.userData.isOwl || (obj.parent && obj.parent.userData.isOwl);
+        if (isOwl) {
+            document.body.style.cursor = 'pointer';
+        } else {
+            var crystalObj = crystals.indexOf(obj) !== -1 ? obj : null;
+            if (crystalObj && crystalObj.userData.checkpoint) {
+                document.body.style.cursor = 'pointer';
+                newHovered = crystalObj;
             } else {
                 document.body.style.cursor = 'default';
-                if(hoveredBook && selectedBook !== hoveredBook) {
-                    gsap.to(hoveredBook.scale, {x: 1, y: 1, z: 1, duration: 0.2});
-                    hoveredBook = null;
-                }
             }
-
-            // Animate Books and Pedestals bobbing
-            tomes.forEach((book, i) => {
-                const yOffset = Math.sin(time * 1.5 + (i * 0.5)) * 0.15;
-                book.position.y = book.userData.originalY + yOffset;
-                // Gently rotate the book
-                book.rotation.y = Math.sin(time * 0.5 + i) * 0.1;
-                
-                if(bookPedestals[i]) {
-                    // Pedestal bobs slightly less
-                    bookPedestals[i].position.y = (book.userData.originalY - 0.8) + (yOffset * 0.5); 
-                }
-            });
-
-            // Animate Owl Head and Rings
-            if(owlGroup) {
-                const owlHead = owlGroup.getObjectByName("head");
-                if(owlHead) {
-                    // Looking around naturally
-                    owlHead.rotation.y = Math.sin(time * 0.8) * 0.4 + Math.sin(time * 0.2) * 0.2;
-                    owlHead.rotation.z = Math.cos(time * 0.5) * 0.1;
-                }
-            }
-
-            const magicRing = scene.getObjectByName("magicRing");
-            if(magicRing) {
-                magicRing.rotation.z = time * 0.2;
-                magicRing.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
-            }
-
-            // Particle Animations
-            if(fireflies) {
-                const positions = fireflies.geometry.attributes.position.array;
-                const phases = fireflies.geometry.attributes.phase.array;
-                for(let i=0; i<positions.length/3; i++) {
-                    positions[i*3+1] += Math.sin(time + phases[i]) * 0.005; 
-                    if(positions[i*3+1] > 12) positions[i*3+1] = 0; 
-                }
-                fireflies.geometry.attributes.position.needsUpdate = true;
-            }
-
-            if(magicDust) {
-                const dustPos = magicDust.geometry.attributes.position.array;
-                for(let i=0; i<dustPos.length/3; i++) {
-                    dustPos[i*3+1] += 0.02; // Float up
-                    // slight horizontal drift
-                    dustPos[i*3] += Math.sin(time + i) * 0.01;
-                    if(dustPos[i*3+1] > 8) dustPos[i*3+1] = 0.5;
-                }
-                magicDust.geometry.attributes.position.needsUpdate = true;
-            }
-
-            renderer.render(scene, camera);
         }
+    } else {
+        document.body.style.cursor = 'default';
+    }
 
-        window.onload = init;
-    </script>
+    if (newHovered !== hoveredCrystal) {
+        if (hoveredCrystal && hoveredCrystal !== selectedCrystal) {
+            gsap.to(hoveredCrystal.scale, { x: hoveredCrystal.userData.baseScale, y: hoveredCrystal.userData.baseScale, z: hoveredCrystal.userData.baseScale, duration: 0.2 });
+        }
+        if (newHovered && newHovered !== selectedCrystal) {
+            gsap.to(newHovered.scale, { x: newHovered.userData.baseScale * 1.18, y: newHovered.userData.baseScale * 1.18, z: newHovered.userData.baseScale * 1.18, duration: 0.2 });
+        }
+        hoveredCrystal = newHovered;
+    }
+
+    crystals.forEach(function(c, i) {
+        if (c !== selectedCrystal) {
+            c.position.y = c.userData.originalY + Math.sin(t * 1.2 + i * 0.75) * 0.13;
+        }
+        c.rotation.y += 0.009;
+        c.rotation.x = Math.sin(t * 0.4 + i) * 0.08;
+    });
+
+    if (owlGroup) {
+        var h = owlGroup.getObjectByName('head');
+        if (h) {
+            h.rotation.y = Math.sin(t * 0.8) * 0.4 + Math.sin(t * 0.2) * 0.2;
+            h.rotation.z = Math.cos(t * 0.5) * 0.1;
+        }
+    }
+
+    var ring = scene.getObjectByName('magicRing');
+    if (ring) { ring.rotation.z = t * 0.2; ring.scale.setScalar(1 + Math.sin(t * 2) * 0.05); }
+
+    if (fireflies) {
+        var fp = fireflies.geometry.attributes.position.array;
+        var ph = fireflies.geometry.attributes.phase.array;
+        for (var i = 0; i < fp.length / 3; i++) {
+            fp[i * 3 + 1] += Math.sin(t + ph[i]) * 0.005;
+            if (fp[i * 3 + 1] > 12) fp[i * 3 + 1] = 0;
+        }
+        fireflies.geometry.attributes.position.needsUpdate = true;
+    }
+
+    if (magicDust) {
+        var dp = magicDust.geometry.attributes.position.array;
+        for (var i = 0; i < dp.length / 3; i++) {
+            dp[i * 3 + 1] += 0.02;
+            dp[i * 3] += Math.sin(t + i) * 0.01;
+            if (dp[i * 3 + 1] > 8) dp[i * 3 + 1] = 0.5;
+        }
+        magicDust.geometry.attributes.position.needsUpdate = true;
+    }
+
+    renderer.render(scene, camera);
+}
+
+window.onload = init;
+</script>
 </body>
 </html>
