@@ -36,7 +36,7 @@
         .pointer-events-auto { pointer-events: auto; }
         .title-font { font-family: 'Cinzel', serif; }
         .glass-panel {
-            background: rgba(10, 15, 25, 0.80);
+            background: rgba(10, 15, 25, 0.82);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(56, 182, 255, 0.25);
@@ -59,14 +59,9 @@
             border-color: rgba(56,182,255,1);
         }
         .tx-row {
-            transition: background 0.15s;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 8px;
-            border-radius: 8px;
-            color: inherit;
+            transition: background 0.15s; text-decoration: none;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; border-radius: 8px; color: inherit;
         }
         .tx-row:hover { background: rgba(56,182,255,0.1); }
         .tab-btn { padding: 0.5rem 1rem; border-bottom: 2px solid transparent; transition: all 0.2s; }
@@ -85,8 +80,7 @@
         }
         .nav-btn:hover:not(:disabled) {
             background: rgba(56,182,255,0.28);
-            box-shadow: 0 0 10px rgba(56,182,255,0.4);
-            color: white;
+            box-shadow: 0 0 10px rgba(56,182,255,0.4); color: white;
         }
         .nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
         .stat-card {
@@ -94,6 +88,18 @@
             border: 1px solid rgba(56,182,255,0.18);
             border-radius: 10px; padding: 8px; text-align: center;
         }
+        /* Tx node tooltip */
+        #tx-tooltip {
+            position: fixed; z-index: 50; pointer-events: none;
+            background: rgba(5,10,20,0.92);
+            border: 1px solid rgba(56,182,255,0.4);
+            box-shadow: 0 0 20px rgba(56,182,255,0.3);
+            border-radius: 10px; padding: 10px 12px;
+            min-width: 200px; max-width: 260px;
+            backdrop-filter: blur(12px);
+            transition: opacity 0.1s;
+        }
+        #tx-tooltip.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -143,7 +149,6 @@
         <!-- Checkpoint detail panel -->
         <div id="info-panel" class="glass-panel p-4 md:p-5 rounded-xl w-full md:max-w-xl pointer-events-auto transform translate-x-[120%] transition-transform duration-500 ease-out hidden flex-col" style="max-height:72vh;">
 
-            <!-- Panel header -->
             <div class="flex justify-between items-start mb-3 border-b border-blue-500/25 pb-3 shrink-0">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -153,12 +158,11 @@
                             <button id="btn-next" class="nav-btn" onclick="navigateCheckpoint(1)">Next &rarr;</button>
                         </div>
                     </div>
-                    <p id="cp-meta" class="text-xs text-gray-400 mt-1 font-mono truncate">Epoch &#x2014; &middot; &#x2014;</p>
+                    <p id="cp-meta" class="text-xs text-gray-400 mt-1 font-mono truncate">&#x2014;</p>
                 </div>
                 <button onclick="closeInfoPanel()" class="text-gray-400 hover:text-white text-3xl leading-none ml-2">&times;</button>
             </div>
 
-            <!-- Stats -->
             <div class="grid grid-cols-3 gap-2 mb-3 shrink-0">
                 <div class="stat-card">
                     <div id="stat-tx" class="text-base md:text-lg font-bold font-mono text-white">&#x2014;</div>
@@ -174,20 +178,17 @@
                 </div>
             </div>
 
-            <!-- Tabs -->
             <div class="flex border-b border-blue-500/25 mb-3 shrink-0">
                 <button class="tab-btn flex-1 text-xs md:text-sm font-bold text-gray-400 active" onclick="switchTab('transactions')">Transactions &#x1F4DC;</button>
                 <button class="tab-btn flex-1 text-xs md:text-sm font-bold text-gray-400" onclick="switchTab('raw')">Raw Data &#x1F4BB;</button>
             </div>
 
-            <!-- Transactions tab -->
             <div id="tab-transactions" class="flex-1 overflow-y-auto min-h-0">
                 <div id="tx-list">
                     <div class="text-center text-gray-500 text-sm py-6 animate-pulse">Decoding transactions...</div>
                 </div>
             </div>
 
-            <!-- Raw tab -->
             <div id="tab-raw" class="hidden flex-1 overflow-y-auto min-h-0">
                 <pre class="bg-[#020408] p-3 rounded-lg border border-gray-700 font-mono text-xs text-green-400 whitespace-pre-wrap overflow-x-auto" id="cp-raw-json">{}</pre>
             </div>
@@ -215,27 +216,37 @@
         <svg class="w-5 h-5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         <input type="number" id="master-search" placeholder="Enter checkpoint sequence number..." class="bg-transparent border-none text-white w-full focus:outline-none ml-3 placeholder-blue-300/40 text-sm font-mono" min="0">
     </div>
-    <button onclick="searchCheckpoint()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg text-white font-bold transition-all shadow-[0_0_15px_rgba(56,182,255,0.4)]">
-        Open Checkpoint
-    </button>
+    <button onclick="searchCheckpoint()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-lg text-white font-bold transition-all">Open Checkpoint</button>
     <p id="search-error" class="text-red-400 text-sm text-center mt-3 hidden">Checkpoint not found or invalid number.</p>
+</div>
+
+<!-- Tx node hover tooltip -->
+<div id="tx-tooltip" class="hidden">
+    <div id="tt-status" class="font-bold text-xs mb-1 text-green-400"></div>
+    <div class="flex items-center gap-1 mb-1">
+        <span id="tt-emoji" class="text-sm"></span>
+        <span id="tt-kind" class="text-blue-300 text-xs font-semibold uppercase tracking-wide"></span>
+    </div>
+    <div id="tt-label" class="text-gray-200 text-xs leading-snug mb-1"></div>
+    <div id="tt-digest" class="font-mono text-[10px] text-blue-400 opacity-70"></div>
+    <div class="text-[10px] text-gray-500 mt-1">Click to open in explorer &#x2197;</div>
 </div>
 
 <canvas id="bg"></canvas>
 
 <script>
 // ── RPC ───────────────────────────────────────────────────────────────────────
-const SUI_RPC = 'https://fullnode.mainnet.sui.io';
-let rpcId = 0;
+var SUI_RPC = 'https://fullnode.mainnet.sui.io';
+var rpcId = 0;
 
 async function rpc(method, params) {
     if (params === undefined) params = [];
-    const res = await fetch(SUI_RPC, {
+    var res = await fetch(SUI_RPC, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: ++rpcId, method: method, params: params })
     });
-    const json = await res.json();
+    var json = await res.json();
     if (json.error) throw new Error(json.error.message);
     return json.result;
 }
@@ -247,6 +258,12 @@ var selectedCpSeq = null;
 var selectedCrystal = null;
 var hoveredCrystal = null;
 var isNavigating = false;
+
+// Visualization state
+var txVisualization = null;   // THREE.Group — entire checkpoint viz
+var txNodes = [];             // individual transaction meshes
+var hoveredTxNode = null;
+var isVizMode = false;
 
 // ── Three.js globals ──────────────────────────────────────────────────────────
 var scene, camera, renderer, controls, raycaster, mouse, clock;
@@ -301,10 +318,7 @@ function init() {
     centerLight.position.set(0, 3, 0);
     scene.add(centerLight);
 
-    var moon = new THREE.Mesh(
-        new THREE.SphereGeometry(15, 32, 32),
-        new THREE.MeshBasicMaterial({ color: 0xeef5ff })
-    );
+    var moon = new THREE.Mesh(new THREE.SphereGeometry(15, 32, 32), new THREE.MeshBasicMaterial({ color: 0xeef5ff }));
     moon.position.set(-40, 60, -80);
     scene.add(moon);
 
@@ -348,12 +362,8 @@ function buildEnvironment() {
         var x = pos[i], y = pos[i + 1];
         var dist = Math.sqrt(x * x + y * y);
         var h = (Math.sin(x * 0.1) * Math.cos(y * 0.1)) * 2.5 + (Math.sin(x * 0.05) + Math.cos(y * 0.05)) * 4;
-        if (dist < 10) {
-            h = 0;
-        } else if (dist < 20) {
-            var t = (dist - 10) / 10;
-            h *= t * t * (3 - 2 * t);
-        }
+        if (dist < 10) { h = 0; }
+        else if (dist < 20) { var t = (dist - 10) / 10; h *= t * t * (3 - 2 * t); }
         h += Math.random() * 0.2;
         pos[i + 2] = h;
     }
@@ -366,24 +376,19 @@ function buildEnvironment() {
     var trunkMat = new THREE.MeshStandardMaterial({ color: 0x0a0c10, roughness: 1 });
     var leafMat = new THREE.MeshStandardMaterial({ color: 0x051a1a, roughness: 0.8, flatShading: true });
     for (var i = 0; i < 60; i++) {
-        var a = Math.random() * Math.PI * 2;
-        var d = 22 + Math.random() * 40;
+        var a = Math.random() * Math.PI * 2, d = 22 + Math.random() * 40;
         var tx = Math.cos(a) * d, tz = Math.sin(a) * d;
         var gy = (Math.sin(tx * 0.1) * Math.cos(tz * 0.1)) * 2.5 + (Math.sin(tx * 0.05) + Math.cos(tz * 0.05)) * 4;
         var g = new THREE.Group();
         g.position.set(tx, gy, tz);
         var r = 0.4 + Math.random() * 0.8, h = 15 + Math.random() * 15;
         var trunk = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.5, r, h, 7), trunkMat);
-        trunk.position.y = h / 2;
-        trunk.castShadow = true;
-        g.add(trunk);
+        trunk.position.y = h / 2; trunk.castShadow = true; g.add(trunk);
         for (var c = 0; c < 3 + Math.floor(Math.random() * 3); c++) {
             var s = 3 + Math.random() * 4;
             var canopy = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 1), leafMat);
             canopy.position.set((Math.random() - 0.5) * 4, h - 2 + Math.random() * 6, (Math.random() - 0.5) * 4);
-            canopy.scale.y = 0.6 + Math.random() * 0.4;
-            canopy.castShadow = true;
-            g.add(canopy);
+            canopy.scale.y = 0.6 + Math.random() * 0.4; canopy.castShadow = true; g.add(canopy);
         }
         scene.add(g);
     }
@@ -399,32 +404,21 @@ function buildEnvironment() {
         var mg = new THREE.Group();
         mg.position.set(Math.cos(ma) * md, 0.1, Math.sin(ma) * md);
         var stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 0.4, 8), stalkMat);
-        stalk.position.y = 0.2;
-        mg.add(stalk);
+        stalk.position.y = 0.2; mg.add(stalk);
         var cm = capMats[Math.floor(Math.random() * capMats.length)];
         var cap = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.2, 8), cm);
-        cap.position.y = 0.4;
-        mg.add(cap);
-        if (Math.random() > 0.5) {
-            var ml = new THREE.PointLight(cm.color, 0.2, 2);
-            ml.position.y = 0.5;
-            mg.add(ml);
-        }
+        cap.position.y = 0.4; mg.add(cap);
+        if (Math.random() > 0.5) { var ml = new THREE.PointLight(cm.color, 0.2, 2); ml.position.y = 0.5; mg.add(ml); }
         scene.add(mg);
     }
 
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true });
     var altar = new THREE.Group();
     var base = new THREE.Mesh(new THREE.CylinderGeometry(4, 4.5, 0.6, 16), stoneMat);
-    base.position.y = 0.3; base.receiveShadow = true;
-    altar.add(base);
+    base.position.y = 0.3; base.receiveShadow = true; altar.add(base);
     var step = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.8, 0.4, 16), stoneMat);
-    step.position.y = 0.8; step.receiveShadow = true;
-    altar.add(step);
-    var ring = new THREE.Mesh(
-        new THREE.TorusGeometry(4.8, 0.05, 8, 32),
-        new THREE.MeshBasicMaterial({ color: 0x38b6ff, transparent: true, opacity: 0.6 })
-    );
+    step.position.y = 0.8; step.receiveShadow = true; altar.add(step);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(4.8, 0.05, 8, 32), new THREE.MeshBasicMaterial({ color: 0x38b6ff, transparent: true, opacity: 0.6 }));
     ring.position.y = 0.5; ring.rotation.x = Math.PI / 2; ring.name = 'magicRing';
     altar.add(ring);
     scene.add(altar);
@@ -434,71 +428,44 @@ function buildEnvironment() {
 function buildOwl() {
     owlGroup = new THREE.Group();
     owlGroup.position.set(0, 3.5, -1.5);
-
     var darkMat = new THREE.MeshStandardMaterial({ color: 0x152233, roughness: 0.9, flatShading: true });
     var lightMat = new THREE.MeshStandardMaterial({ color: 0x8ba6c6, roughness: 0.8, flatShading: true });
     var beakMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.6 });
     var eyeGlow = new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0xff9900, emissiveIntensity: 0.8 });
     var eyeDark = new THREE.MeshBasicMaterial({ color: 0x050505 });
 
-    var bodyGeo = new THREE.SphereGeometry(0.7, 16, 16);
-    bodyGeo.scale(1, 1.4, 0.9);
-    var body = new THREE.Mesh(bodyGeo, darkMat);
-    body.castShadow = true;
-    owlGroup.add(body);
+    var bodyGeo = new THREE.SphereGeometry(0.7, 16, 16); bodyGeo.scale(1, 1.4, 0.9);
+    var body = new THREE.Mesh(bodyGeo, darkMat); body.castShadow = true; owlGroup.add(body);
+    var bellyGeo = new THREE.SphereGeometry(0.65, 16, 16); bellyGeo.scale(0.9, 1.2, 0.5);
+    var belly = new THREE.Mesh(bellyGeo, lightMat); belly.position.set(0, -0.1, 0.45); owlGroup.add(belly);
 
-    var bellyGeo = new THREE.SphereGeometry(0.65, 16, 16);
-    bellyGeo.scale(0.9, 1.2, 0.5);
-    var belly = new THREE.Mesh(bellyGeo, lightMat);
-    belly.position.set(0, -0.1, 0.45);
-    owlGroup.add(belly);
-
-    var head = new THREE.Group();
-    head.position.set(0, 1.1, 0.1);
-    head.name = 'head';
-    var headBase = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), darkMat);
-    headBase.castShadow = true;
-    head.add(headBase);
-
-    var ldGeo = new THREE.SphereGeometry(0.45, 16, 16); ldGeo.scale(1, 1, 0.3);
-    var ld = new THREE.Mesh(ldGeo, lightMat); ld.position.set(-0.25, 0, 0.5); ld.rotation.y = -0.2; head.add(ld);
-    var rdGeo = new THREE.SphereGeometry(0.45, 16, 16); rdGeo.scale(1, 1, 0.3);
-    var rd = new THREE.Mesh(rdGeo, lightMat); rd.position.set(0.25, 0, 0.5); rd.rotation.y = 0.2; head.add(rd);
-
+    var head = new THREE.Group(); head.position.set(0, 1.1, 0.1); head.name = 'head';
+    var headBase = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), darkMat); headBase.castShadow = true; head.add(headBase);
+    var ldG = new THREE.SphereGeometry(0.45, 16, 16); ldG.scale(1, 1, 0.3);
+    var ld = new THREE.Mesh(ldG, lightMat); ld.position.set(-0.25, 0, 0.5); ld.rotation.y = -0.2; head.add(ld);
+    var rdG = new THREE.SphereGeometry(0.45, 16, 16); rdG.scale(1, 1, 0.3);
+    var rd = new THREE.Mesh(rdG, lightMat); rd.position.set(0.25, 0, 0.5); rd.rotation.y = 0.2; head.add(rd);
     [-0.25, 0.25].forEach(function(ex) {
         var og = new THREE.SphereGeometry(0.15, 16, 16); og.scale(1, 1, 0.4);
         var outer = new THREE.Mesh(og, eyeGlow); outer.position.set(ex, 0.05, 0.65); head.add(outer);
         var ig = new THREE.SphereGeometry(0.09, 16, 16); ig.scale(1, 1, 0.5);
         var inner = new THREE.Mesh(ig, eyeDark); inner.position.set(ex, 0.05, 0.7); head.add(inner);
     });
-
     var beak = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 4), beakMat);
     beak.rotation.x = Math.PI / 2 + 0.2; beak.position.set(0, -0.15, 0.7); head.add(beak);
-
     var lt = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), darkMat);
     lt.position.set(-0.4, 0.5, 0.1); lt.rotation.z = 0.3; lt.rotation.x = -0.2; head.add(lt);
     var rt = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), darkMat);
     rt.position.set(0.4, 0.5, 0.1); rt.rotation.z = -0.3; rt.rotation.x = -0.2; head.add(rt);
-
     owlGroup.add(head);
 
     [-0.7, 0.7].forEach(function(wx, idx) {
         var wg = new THREE.SphereGeometry(0.5, 16, 16); wg.scale(0.3, 1.4, 0.8);
         var wing = new THREE.Mesh(wg, darkMat);
-        wing.position.set(wx, 0, 0);
-        wing.rotation.z = idx === 0 ? 0.2 : -0.2;
-        wing.rotation.x = 0.2;
-        wing.castShadow = true;
-        owlGroup.add(wing);
+        wing.position.set(wx, 0, 0); wing.rotation.z = idx === 0 ? 0.2 : -0.2; wing.rotation.x = 0.2; wing.castShadow = true; owlGroup.add(wing);
     });
-
-    var perch = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.4, 0.6, 3, 8),
-        new THREE.MeshStandardMaterial({ color: 0x111622, roughness: 0.9, flatShading: true })
-    );
-    perch.position.set(0, -2.2, 0); perch.castShadow = true;
-    owlGroup.add(perch);
-
+    var perch = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 3, 8), new THREE.MeshStandardMaterial({ color: 0x111622, roughness: 0.9, flatShading: true }));
+    perch.position.set(0, -2.2, 0); perch.castShadow = true; owlGroup.add(perch);
     owlGroup.traverse(function(c) { if (c.isMesh) c.userData.isOwl = true; });
     scene.add(owlGroup);
 }
@@ -509,29 +476,15 @@ function buildCrystals() {
     for (var i = 0; i < CRYSTAL_COUNT; i++) {
         var t = i / (CRYSTAL_COUNT - 1);
         var angle = (t - 0.5) * (Math.PI * 1.5) + Math.PI;
-        var cx = Math.cos(angle) * RADIUS;
-        var cz = Math.sin(angle) * RADIUS;
-
-        var ped = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.3, 0.22, 0.22, 6),
-            new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true })
-        );
-        ped.position.set(cx, 1.08, cz);
-        ped.receiveShadow = true;
-        scene.add(ped);
-
+        var cx = Math.cos(angle) * RADIUS, cz = Math.sin(angle) * RADIUS;
+        var ped = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.22, 0.22, 6), new THREE.MeshStandardMaterial({ color: 0x1a222e, roughness: 0.9, flatShading: true }));
+        ped.position.set(cx, 1.08, cz); ped.receiveShadow = true; scene.add(ped);
         var geo = new THREE.OctahedronGeometry(0.42, 0);
-        var mat = new THREE.MeshStandardMaterial({
-            color: 0x38b6ff, emissive: 0x38b6ff,
-            emissiveIntensity: 0.1, transparent: true,
-            opacity: 0.2, metalness: 0.05, roughness: 0.05
-        });
+        var mat = new THREE.MeshStandardMaterial({ color: 0x38b6ff, emissive: 0x38b6ff, emissiveIntensity: 0.1, transparent: true, opacity: 0.2, metalness: 0.05, roughness: 0.05 });
         var mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(cx, 2.2, cz);
         mesh.userData = { index: i, checkpoint: null, baseScale: 1.0, originalY: 2.2 };
-        mesh.castShadow = true;
-        scene.add(mesh);
-        crystals.push(mesh);
+        mesh.castShadow = true; scene.add(mesh); crystals.push(mesh);
     }
 }
 
@@ -540,12 +493,7 @@ function updateCrystals() {
     var maxTx = Math.max.apply(null, counts.concat([1]));
     crystals.forEach(function(crystal, i) {
         var cp = displayedCheckpoints[i];
-        if (!cp) {
-            crystal.material.opacity = 0.12;
-            crystal.material.emissiveIntensity = 0.04;
-            crystal.userData.checkpoint = null;
-            return;
-        }
+        if (!cp) { crystal.material.opacity = 0.12; crystal.material.emissiveIntensity = 0.04; crystal.userData.checkpoint = null; return; }
         crystal.userData.checkpoint = cp;
         var ratio = counts[i] / maxTx;
         var base = 0.7 + ratio * 0.65;
@@ -559,20 +507,14 @@ function updateCrystals() {
 // ── Particles ─────────────────────────────────────────────────────────────────
 function buildParticles() {
     var fGeo = new THREE.BufferGeometry();
-    var fPos = new Float32Array(300 * 3);
-    var fPhase = new Float32Array(300);
+    var fPos = new Float32Array(300 * 3), fPhase = new Float32Array(300);
     for (var i = 0; i < 900; i += 3) {
-        fPos[i] = (Math.random() - 0.5) * 60;
-        fPos[i + 1] = Math.random() * 15;
-        fPos[i + 2] = (Math.random() - 0.5) * 60;
+        fPos[i] = (Math.random() - 0.5) * 60; fPos[i + 1] = Math.random() * 15; fPos[i + 2] = (Math.random() - 0.5) * 60;
         fPhase[i / 3] = Math.random() * Math.PI * 2;
     }
     fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
     fGeo.setAttribute('phase', new THREE.BufferAttribute(fPhase, 1));
-    fireflies = new THREE.Points(fGeo, new THREE.PointsMaterial({
-        size: 0.2, color: 0x88ccff, transparent: true,
-        opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false
-    }));
+    fireflies = new THREE.Points(fGeo, new THREE.PointsMaterial({ size: 0.2, color: 0x88ccff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(fireflies);
 
     var dGeo = new THREE.BufferGeometry();
@@ -582,33 +524,27 @@ function buildParticles() {
         dPos[i] = Math.cos(da) * dr; dPos[i + 1] = Math.random() * 8; dPos[i + 2] = Math.sin(da) * dr;
     }
     dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
-    magicDust = new THREE.Points(dGeo, new THREE.PointsMaterial({
-        size: 0.05, color: 0x38b6ff, transparent: true,
-        opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false
-    }));
+    magicDust = new THREE.Points(dGeo, new THREE.PointsMaterial({ size: 0.05, color: 0x38b6ff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(magicDust);
 }
 
-// ── Data Loading ──────────────────────────────────────────────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 async function loadInitialData() {
     try {
-        document.getElementById('loading-status').innerText = 'Fetching latest checkpoints from Sui Mainnet...';
+        document.getElementById('loading-status').innerText = 'Fetching latest checkpoints...';
         latestSeq = parseInt(await rpc('sui_getLatestCheckpointSequenceNumber'));
-
         var result = await rpc('sui_getCheckpoints', [null, CRYSTAL_COUNT, true]);
         displayedCheckpoints = result.data;
         updateCrystals();
-
         document.getElementById('live-ticker').innerText = latestSeq.toLocaleString();
         startLiveTicker();
-
         document.getElementById('loading').style.opacity = '0';
         setTimeout(function() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('ui-layer').style.opacity = '1';
-            typeWriter(CRYSTAL_COUNT + ' checkpoints crystallized from the network. Click a crystal to decode its contents, or click me to seek by number.');
+            typeWriter(CRYSTAL_COUNT + ' checkpoints crystallized. Click a crystal to visualize its contents, or click me to seek by number.');
         }, 1000);
-    } catch (err) {
+    } catch(err) {
         document.getElementById('loading-status').innerText = 'RPC error — retrying in 3s...';
         setTimeout(loadInitialData, 3000);
     }
@@ -621,9 +557,7 @@ function startLiveTicker() {
             if (seq > latestSeq) {
                 latestSeq = seq;
                 document.getElementById('live-ticker').innerText = latestSeq.toLocaleString();
-                if (selectedCpSeq !== null) {
-                    document.getElementById('btn-next').disabled = selectedCpSeq >= latestSeq;
-                }
+                if (selectedCpSeq !== null) document.getElementById('btn-next').disabled = selectedCpSeq >= latestSeq;
             }
         } catch(e) {}
     }, 4000);
@@ -632,31 +566,24 @@ function startLiveTicker() {
 // ── Crystal Selection ─────────────────────────────────────────────────────────
 async function selectCrystal(crystal) {
     if (!crystal.userData.checkpoint || isNavigating) return;
-
-    if (selectedCrystal && selectedCrystal !== crystal) {
-        var prev = selectedCrystal;
-        gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
-        prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
-    }
-
+    if (selectedCrystal && selectedCrystal !== crystal) deselectCrystal(selectedCrystal);
     selectedCrystal = crystal;
-    gsap.to(crystal.scale, {
-        x: crystal.userData.baseScale * 1.6,
-        y: crystal.userData.baseScale * 1.6,
-        z: crystal.userData.baseScale * 1.6,
-        duration: 0.5, ease: 'back.out(1.7)'
-    });
+    gsap.to(crystal.scale, { x: crystal.userData.baseScale * 1.6, y: crystal.userData.baseScale * 1.6, z: crystal.userData.baseScale * 1.6, duration: 0.5, ease: 'back.out(1.7)' });
     crystal.material.emissiveIntensity = 3.5;
 
     var cp = crystal.userData.checkpoint;
     selectedCpSeq = parseInt(cp.sequenceNumber);
-
     var targetPos = new THREE.Vector3();
     crystal.getWorldPosition(targetPos);
-    gsap.to(controls.target, { x: targetPos.x * 0.5, y: targetPos.y - 0.5, z: targetPos.z * 0.5, duration: 1.2, ease: 'power2.out' });
-
+    gsap.to(controls.target, { x: targetPos.x * 0.3, y: targetPos.y - 0.5, z: targetPos.z * 0.3, duration: 1.2, ease: 'power2.out' });
     openPanel(cp);
-    fetchAndRenderTxs(cp);
+    fetchAndVisualize(cp);
+}
+
+function deselectCrystal(c) {
+    var ratio = (c.userData.baseScale - 0.7) / 0.65;
+    gsap.to(c.scale, { x: c.userData.baseScale, y: c.userData.baseScale, z: c.userData.baseScale, duration: 0.4 });
+    c.material.emissiveIntensity = 0.35 + ratio * 1.2;
 }
 
 async function openCheckpointBySeq(seq) {
@@ -665,27 +592,17 @@ async function openCheckpointBySeq(seq) {
     try {
         var cp = await rpc('sui_getCheckpoint', [seq.toString()]);
         selectedCpSeq = seq;
-
-        if (selectedCrystal) {
-            var prev = selectedCrystal;
-            gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
-            prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
-            selectedCrystal = null;
-        }
-
-        var match = crystals.find(function(c) {
-            return c.userData.checkpoint && parseInt(c.userData.checkpoint.sequenceNumber) === seq;
-        });
+        if (selectedCrystal) { deselectCrystal(selectedCrystal); selectedCrystal = null; }
+        var match = crystals.find(function(c) { return c.userData.checkpoint && parseInt(c.userData.checkpoint.sequenceNumber) === seq; });
         if (match) {
             selectedCrystal = match;
             gsap.to(match.scale, { x: match.userData.baseScale * 1.6, y: match.userData.baseScale * 1.6, z: match.userData.baseScale * 1.6, duration: 0.5, ease: 'back.out(1.7)' });
             match.material.emissiveIntensity = 3.5;
         }
-
         openPanel(cp);
-        fetchAndRenderTxs(cp);
+        fetchAndVisualize(cp);
     } catch(err) {
-        typeWriter('The archive could not locate checkpoint #' + seq.toLocaleString() + '. It may not exist yet.');
+        typeWriter('The archive could not locate checkpoint #' + seq.toLocaleString() + '.');
     } finally {
         isNavigating = false;
     }
@@ -706,31 +623,23 @@ function openPanel(cp) {
     document.getElementById('tx-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-6 animate-pulse">Decoding transactions...</div>';
     document.getElementById('btn-prev').disabled = seq <= 0;
     document.getElementById('btn-next').disabled = seq >= latestSeq;
-
     switchTab('transactions');
 
     var panel = document.getElementById('info-panel');
-    panel.classList.remove('hidden');
-    panel.classList.add('flex');
+    panel.classList.remove('hidden'); panel.classList.add('flex');
     requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
-
-    typeWriter('Checkpoint #' + seq.toLocaleString() + ' — Epoch ' + cp.epoch + ' — ' + txCount + ' transactions sealed in this crystal.');
+    typeWriter('Checkpoint #' + seq.toLocaleString() + ' — Epoch ' + cp.epoch + ' — ' + txCount + ' transactions sealed.');
 }
 
 function closeInfoPanel() {
     var panel = document.getElementById('info-panel');
     panel.style.transform = 'translateX(120%)';
     setTimeout(function() { panel.classList.add('hidden'); panel.classList.remove('flex'); }, 500);
-
-    if (selectedCrystal) {
-        var prev = selectedCrystal;
-        gsap.to(prev.scale, { x: prev.userData.baseScale, y: prev.userData.baseScale, z: prev.userData.baseScale, duration: 0.4 });
-        prev.material.emissiveIntensity = 0.35 + (prev.userData.baseScale - 0.7) / 0.65 * 1.2;
-        selectedCrystal = null;
-    }
+    if (selectedCrystal) { deselectCrystal(selectedCrystal); selectedCrystal = null; }
     selectedCpSeq = null;
     gsap.to(controls.target, { x: 0, y: 2, z: 0, duration: 1 });
-    typeWriter('The crystal dims. Click another to read its history, or click me to seek a specific checkpoint.');
+    clearVisualization();
+    typeWriter('The vision dissolves. Click a crystal to begin again.');
 }
 
 function switchTab(tab) {
@@ -747,62 +656,52 @@ function switchTab(tab) {
     }
 }
 
-// ── Transaction Decoding ──────────────────────────────────────────────────────
-async function fetchAndRenderTxs(cp) {
-    var digests = (cp.transactions || []).slice(0, 25);
+// ── Fetch & Visualize ─────────────────────────────────────────────────────────
+async function fetchAndVisualize(cp) {
+    var digests = (cp.transactions || []).slice(0, 40);
     if (digests.length === 0) {
-        document.getElementById('tx-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-6">No transactions in this checkpoint.</div>';
+        document.getElementById('tx-list').innerHTML = '<div class="text-center text-gray-500 text-sm py-6">No transactions.</div>';
         document.getElementById('stat-user').innerText = '0';
         document.getElementById('stat-sys').innerText = '0';
         return;
     }
     try {
-        var txs = await rpc('sui_multiGetTransactionBlocks', [digests, {
-            showInput: true, showEffects: true, showEvents: false, showObjectChanges: false
-        }]);
+        var txs = await rpc('sui_multiGetTransactionBlocks', [digests, { showInput: true, showEffects: true, showEvents: false, showObjectChanges: false }]);
         renderTxList(cp, txs);
+        show3DVisualization(cp, txs);
     } catch(err) {
         document.getElementById('tx-list').innerHTML = '<div class="text-center text-red-400 text-sm py-6">Failed to decode transactions.</div>';
     }
 }
 
+// ── 2D Transaction List ───────────────────────────────────────────────────────
 function renderTxList(cp, txs) {
     var container = document.getElementById('tx-list');
     container.innerHTML = '';
-
-    var userCount = 0, sysCount = 0;
-    var kindCounts = {};
+    var userCount = 0, sysCount = 0, kindCounts = {};
     txs.forEach(function(tx) {
         var k = getTxKind(tx);
         kindCounts[k] = (kindCounts[k] || 0) + 1;
         if (k === 'Programmable') userCount++; else sysCount++;
     });
-
     document.getElementById('stat-user').innerText = userCount.toLocaleString();
     document.getElementById('stat-sys').innerText = sysCount.toLocaleString();
 
-    var totalInCp = (cp.transactions || []).length;
-
-    // Kind summary pills
     var summary = document.createElement('div');
     summary.className = 'flex flex-wrap gap-1.5 mb-3 pb-2 border-b border-blue-500/20';
-
     Object.keys(kindCounts).forEach(function(kind) {
         var pill = document.createElement('span');
         pill.className = 'tx-pill ' + kindPillStyle(kind);
         pill.innerText = kindEmoji(kind) + ' ' + kindLabel(kind) + ': ' + kindCounts[kind];
         summary.appendChild(pill);
     });
-
+    var totalInCp = (cp.transactions || []).length;
     if (totalInCp > txs.length) {
-        var more = document.createElement('span');
-        more.className = 'tx-pill bg-gray-700/50 text-gray-400';
-        more.innerText = '+' + (totalInCp - txs.length).toLocaleString() + ' more';
-        summary.appendChild(more);
+        var more = document.createElement('span'); more.className = 'tx-pill bg-gray-700/50 text-gray-400';
+        more.innerText = '+' + (totalInCp - txs.length).toLocaleString() + ' more'; summary.appendChild(more);
     }
     container.appendChild(summary);
 
-    // Transaction rows
     txs.forEach(function(tx) {
         var kind = getTxKind(tx);
         var ok = tx.effects && tx.effects.status && tx.effects.status.status === 'success';
@@ -813,111 +712,230 @@ function renderTxList(cp, txs) {
         var shortSender = sender ? sender.slice(0, 6) + '…' + sender.slice(-4) : '';
 
         var row = document.createElement('a');
-        row.className = 'tx-row';
-        row.href = 'https://suiscan.xyz/mainnet/tx/' + digest;
-        row.target = '_blank';
-        row.title = digest + '\n' + label;
+        row.className = 'tx-row'; row.href = 'https://suiscan.xyz/mainnet/tx/' + digest; row.target = '_blank'; row.title = digest;
 
-        var statusSpan = document.createElement('span');
-        statusSpan.className = 'text-sm shrink-0';
-        statusSpan.innerText = ok ? '✅' : '❌';
-        row.appendChild(statusSpan);
-
-        var digestSpan = document.createElement('span');
-        digestSpan.className = 'font-mono text-blue-300 text-xs shrink-0';
-        digestSpan.style.width = '96px';
-        digestSpan.innerText = shortD;
-        row.appendChild(digestSpan);
-
-        var emojiSpan = document.createElement('span');
-        emojiSpan.className = 'text-sm shrink-0';
-        emojiSpan.innerText = kindEmoji(kind);
-        row.appendChild(emojiSpan);
-
-        var labelSpan = document.createElement('span');
-        labelSpan.className = 'text-gray-200 text-xs flex-1';
-        labelSpan.style.overflow = 'hidden';
-        labelSpan.style.textOverflow = 'ellipsis';
-        labelSpan.style.whiteSpace = 'nowrap';
-        labelSpan.innerText = label;
-        row.appendChild(labelSpan);
-
-        if (shortSender) {
-            var senderSpan = document.createElement('span');
-            senderSpan.className = 'text-gray-600 font-mono text-[10px] shrink-0 hidden md:block';
-            senderSpan.innerText = shortSender;
-            row.appendChild(senderSpan);
-        }
-
-        var arrowSpan = document.createElement('span');
-        arrowSpan.className = 'text-gray-600 text-xs shrink-0';
-        arrowSpan.innerText = '↗';
-        row.appendChild(arrowSpan);
-
+        var s1 = document.createElement('span'); s1.className = 'text-sm shrink-0'; s1.innerText = ok ? '✅' : '❌'; row.appendChild(s1);
+        var s2 = document.createElement('span'); s2.className = 'font-mono text-blue-300 text-xs shrink-0'; s2.style.width = '96px'; s2.innerText = shortD; row.appendChild(s2);
+        var s3 = document.createElement('span'); s3.className = 'text-sm shrink-0'; s3.innerText = kindEmoji(kind); row.appendChild(s3);
+        var s4 = document.createElement('span'); s4.className = 'text-gray-200 text-xs flex-1'; s4.style.overflow = 'hidden'; s4.style.textOverflow = 'ellipsis'; s4.style.whiteSpace = 'nowrap'; s4.innerText = label; row.appendChild(s4);
+        if (shortSender) { var s5 = document.createElement('span'); s5.className = 'text-gray-600 font-mono text-[10px] shrink-0 hidden md:block'; s5.innerText = shortSender; row.appendChild(s5); }
+        var s6 = document.createElement('span'); s6.className = 'text-gray-600 text-xs shrink-0'; s6.innerText = '↗'; row.appendChild(s6);
         container.appendChild(row);
     });
 }
 
-function getTxKind(tx) {
-    var kind = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction && tx.transaction.data.transaction.kind;
-    if (!kind) return 'Unknown';
-    if (typeof kind === 'string') return kind;
-    if (kind.ProgrammableTransaction !== undefined) return 'Programmable';
-    if (kind.ConsensusCommitPrologue !== undefined || kind.ConsensusCommitPrologueV2 !== undefined) return 'Consensus';
-    if (kind.AuthenticatorStateUpdate !== undefined) return 'AuthState';
-    if (kind.EndOfEpochTransaction !== undefined) return 'EndOfEpoch';
-    if (kind.Genesis !== undefined) return 'Genesis';
-    var keys = Object.keys(kind);
-    return keys.length > 0 ? keys[0] : 'Unknown';
+// ── 3D Visualization ──────────────────────────────────────────────────────────
+function kindColor3(kind) {
+    return { Programmable: 0x38b6ff, Consensus: 0xa78bfa, AuthState: 0xfacc15, EndOfEpoch: 0xef4444, Genesis: 0x4ade80 }[kind] || 0x888899;
 }
 
-function getTxLabel(tx, kind) {
-    if (kind === 'Programmable') {
-        var txns = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction &&
-                   tx.transaction.data.transaction.kind &&
-                   tx.transaction.data.transaction.kind.ProgrammableTransaction &&
-                   tx.transaction.data.transaction.kind.ProgrammableTransaction.transactions;
-        if (txns && txns.length > 0) {
-            var first = txns[0];
-            if (first.MoveCall) {
-                var mc = first.MoveCall;
-                var pkgShort = mc.package ? mc.package.slice(0, 6) + '…' : '?';
-                return pkgShort + '::' + mc.module + '::' + mc.function;
-            }
-            if (first.TransferObjects) return 'Transfer Objects (' + txns.length + ' op' + (txns.length > 1 ? 's' : '') + ')';
-            if (first.SplitCoins) return 'Split Coins';
-            if (first.MergeCoins) return 'Merge Coins';
-            if (first.Publish) return 'Publish Package';
-            if (first.Upgrade) return 'Upgrade Package';
-            var k = Object.keys(first)[0];
-            return k || 'Programmable';
-        }
-        return 'Programmable Transaction';
+function makeArcSegment(startA, endA, innerR, outerR, color) {
+    var pts = [], segs = Math.max(8, Math.ceil((endA - startA) * 20));
+    for (var i = 0; i <= segs; i++) {
+        var a = startA + (endA - startA) * i / segs;
+        pts.push(new THREE.Vector2(Math.cos(a) * outerR, Math.sin(a) * outerR));
     }
-    var labels = { Consensus: 'Consensus Commit Prologue', AuthState: 'Authenticator State Update', EndOfEpoch: 'End of Epoch', Genesis: 'Genesis Transaction' };
-    return labels[kind] || kind;
+    for (var i = segs; i >= 0; i--) {
+        var a = startA + (endA - startA) * i / segs;
+        pts.push(new THREE.Vector2(Math.cos(a) * innerR, Math.sin(a) * innerR));
+    }
+    var shape = new THREE.Shape(); shape.setFromPoints(pts);
+    var geo = new THREE.ShapeGeometry(shape);
+    var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.82, side: THREE.DoubleSide });
+    var mesh = new THREE.Mesh(geo, mat); mesh.rotation.x = -Math.PI / 2;
+    // Add glow ring on same segment
+    var glowMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.18, side: THREE.DoubleSide });
+    var glowPts = [];
+    for (var i = 0; i <= segs; i++) {
+        var a = startA + (endA - startA) * i / segs;
+        glowPts.push(new THREE.Vector2(Math.cos(a) * (outerR + 0.15), Math.sin(a) * (outerR + 0.15)));
+    }
+    for (var i = segs; i >= 0; i--) {
+        var a = startA + (endA - startA) * i / segs;
+        glowPts.push(new THREE.Vector2(Math.cos(a) * (innerR - 0.15), Math.sin(a) * (innerR - 0.15)));
+    }
+    var glowShape = new THREE.Shape(); glowShape.setFromPoints(glowPts);
+    var glowMesh = new THREE.Mesh(new THREE.ShapeGeometry(glowShape), glowMat);
+    glowMesh.rotation.x = -Math.PI / 2;
+    var group = new THREE.Group(); group.add(mesh); group.add(glowMesh);
+    return group;
 }
 
-function kindEmoji(k) {
-    var map = { Programmable: '🔵', Consensus: '⚙️', AuthState: '🔐', EndOfEpoch: '⏚️', Genesis: '🌱' };
-    return map[k] || '❓';
+function show3DVisualization(cp, txs) {
+    clearVisualization();
+    if (!txs || txs.length === 0) return;
+    isVizMode = true;
+
+    txVisualization = new THREE.Group();
+    txVisualization.position.set(0, 3.5, 0);
+    txNodes = [];
+
+    // ── Central core ──────────────────────────────────
+    var coreGeo = new THREE.SphereGeometry(0.18, 20, 20);
+    var coreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x38b6ff, emissiveIntensity: 2.0, metalness: 0.2, roughness: 0.1 });
+    var core = new THREE.Mesh(coreGeo, coreMat); core.name = 'vizCore';
+    txVisualization.add(core);
+    var coreLight = new THREE.PointLight(0x38b6ff, 2.0, 6); coreLight.name = 'coreLight';
+    txVisualization.add(coreLight);
+
+    // ── Stats ring (arcs showing type proportions) ────
+    var kindCounts = {}, total = txs.length;
+    txs.forEach(function(tx) { var k = getTxKind(tx); kindCounts[k] = (kindCounts[k] || 0) + 1; });
+
+    var statsGroup = new THREE.Group(); statsGroup.name = 'statsRing';
+    var currentAngle = 0;
+    var GAP = 0.06;
+    Object.keys(kindCounts).forEach(function(kind) {
+        var span = (kindCounts[kind] / total) * (Math.PI * 2 - GAP * Object.keys(kindCounts).length);
+        if (span < 0.01) return;
+        var arc = makeArcSegment(currentAngle + GAP / 2, currentAngle + span, 1.25, 1.72, kindColor3(kind));
+        statsGroup.add(arc);
+        // Point light at arc midpoint for glow
+        var midA = currentAngle + span / 2;
+        var pl = new THREE.PointLight(kindColor3(kind), 0.4, 3.5);
+        pl.position.set(Math.cos(midA) * 1.5, 0.4, Math.sin(midA) * 1.5);
+        statsGroup.add(pl);
+        currentAngle += span + GAP;
+    });
+    txVisualization.add(statsGroup);
+
+    // ── Transaction nodes (fibonacci sphere) ──────────
+    var n = txs.length;
+    var goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    // Separate system txns (inner sphere) from user txns (outer sphere)
+    var packageMap = {}; // pkg address -> [mesh]
+
+    txs.forEach(function(tx, i) {
+        var kind = getTxKind(tx);
+        var ok = tx.effects && tx.effects.status && tx.effects.status.status === 'success';
+        var color = kindColor3(kind);
+        var label = getTxLabel(tx, kind);
+        var isUser = kind === 'Programmable';
+
+        // Fibonacci sphere — user txns use larger radius
+        var yNorm = 1 - (i / (n - 1)) * 2;
+        var r = Math.sqrt(Math.max(0, 1 - yNorm * yNorm));
+        var theta = goldenAngle * i;
+        var sphereR = isUser ? 2.3 : 1.3;
+        var nx = Math.cos(theta) * r * sphereR;
+        var ny = yNorm * sphereR;
+        var nz = Math.sin(theta) * r * sphereR;
+
+        // Shape by kind
+        var geo;
+        if (kind === 'Programmable')    geo = new THREE.SphereGeometry(0.11, 8, 8);
+        else if (kind === 'Consensus')  geo = new THREE.BoxGeometry(0.16, 0.16, 0.16);
+        else if (kind === 'EndOfEpoch') geo = new THREE.OctahedronGeometry(0.15, 0);
+        else                            geo = new THREE.TetrahedronGeometry(0.13, 0);
+
+        var mat = new THREE.MeshStandardMaterial({
+            color: color, emissive: color,
+            emissiveIntensity: ok ? 0.75 : 0.1,
+            transparent: true, opacity: ok ? 0.95 : 0.4,
+            metalness: 0.15, roughness: 0.25
+        });
+        var mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(nx, ny, nz);
+        mesh.userData = {
+            tx: tx, kind: kind, ok: ok, label: label,
+            digest: tx.digest || '—',
+            finalPos: new THREE.Vector3(nx, ny, nz)
+        };
+
+        txVisualization.add(mesh);
+        txNodes.push(mesh);
+
+        // Track packages for connection lines
+        if (kind === 'Programmable') {
+            var pt = tx.transaction && tx.transaction.data && tx.transaction.data.transaction &&
+                     tx.transaction.data.transaction.kind && tx.transaction.data.transaction.kind.ProgrammableTransaction &&
+                     tx.transaction.data.transaction.kind.ProgrammableTransaction.transactions;
+            if (pt && pt[0] && pt[0].MoveCall) {
+                var pkg = pt[0].MoveCall.package;
+                if (!packageMap[pkg]) packageMap[pkg] = [];
+                packageMap[pkg].push(mesh);
+            }
+        }
+    });
+
+    // ── Connection lines (same package calls) ─────────
+    var lineVerts = [];
+    Object.keys(packageMap).forEach(function(pkg) {
+        var grp = packageMap[pkg];
+        if (grp.length < 2) return;
+        for (var i = 0; i < grp.length - 1; i++) {
+            var a = grp[i].userData.finalPos, b = grp[i + 1].userData.finalPos;
+            lineVerts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+        }
+    });
+    if (lineVerts.length > 0) {
+        var lineGeo = new THREE.BufferGeometry();
+        lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lineVerts), 3));
+        var lineMat = new THREE.LineBasicMaterial({ color: 0x38b6ff, transparent: true, opacity: 0.18 });
+        var lines = new THREE.LineSegments(lineGeo, lineMat); lines.name = 'connLines';
+        txVisualization.add(lines);
+    }
+
+    scene.add(txVisualization);
+
+    // ── Animate in ────────────────────────────────────
+    txNodes.forEach(function(node) {
+        var fp = node.userData.finalPos.clone();
+        node.position.set(0, 0, 0); node.scale.setScalar(0);
+        gsap.to(node.position, { x: fp.x, y: fp.y, z: fp.z, duration: 0.7 + Math.random() * 0.5, ease: 'back.out(1.3)', delay: Math.random() * 0.25 });
+        gsap.to(node.scale, { x: 1, y: 1, z: 1, duration: 0.35, ease: 'back.out(2)', delay: Math.random() * 0.25 });
+    });
+    statsGroup.scale.setScalar(0);
+    gsap.to(statsGroup.scale, { x: 1, y: 1, z: 1, duration: 0.7, ease: 'back.out(1.5)', delay: 0.2 });
+
+    // Dim background crystals so visualization stands out
+    crystals.forEach(function(c) {
+        if (c !== selectedCrystal) {
+            gsap.to(c.material, { opacity: 0.06, emissiveIntensity: 0.03, duration: 0.8 });
+        }
+    });
 }
 
-function kindLabel(k) {
-    var map = { Programmable: 'User', Consensus: 'Consensus', AuthState: 'Auth', EndOfEpoch: 'Epoch End', Genesis: 'Genesis' };
-    return map[k] || k;
+function clearVisualization() {
+    if (txVisualization) {
+        txVisualization.traverse(function(obj) {
+            if (obj.isMesh || obj.isLine || obj.isLineSegments) {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) obj.material.dispose();
+            }
+        });
+        scene.remove(txVisualization);
+        txVisualization = null;
+    }
+    txNodes = [];
+    hoveredTxNode = null;
+    isVizMode = false;
+    hideTooltip();
+    // Restore crystals
+    crystals.forEach(function(c) {
+        if (!c.userData.checkpoint) return;
+        var ratio = (c.userData.baseScale - 0.7) / 0.65;
+        gsap.to(c.material, { opacity: 0.45 + ratio * 0.45, emissiveIntensity: 0.35 + ratio * 1.2, duration: 0.8 });
+    });
 }
 
-function kindPillStyle(k) {
-    var styles = {
-        Programmable: 'bg-blue-900/50 text-blue-300 border border-blue-500/30',
-        Consensus: 'bg-purple-900/50 text-purple-300 border border-purple-500/30',
-        AuthState: 'bg-yellow-900/50 text-yellow-300 border border-yellow-500/30',
-        EndOfEpoch: 'bg-red-900/50 text-red-300 border border-red-500/30',
-        Genesis: 'bg-green-900/50 text-green-300 border border-green-500/30'
-    };
-    return styles[k] || 'bg-gray-700/50 text-gray-300';
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+function showTooltip(node, sx, sy) {
+    var d = node.userData;
+    document.getElementById('tt-status').innerText = d.ok ? '✅ Success' : '❌ Failed';
+    document.getElementById('tt-status').className = d.ok ? 'font-bold text-xs mb-1 text-green-400' : 'font-bold text-xs mb-1 text-red-400';
+    document.getElementById('tt-emoji').innerText = kindEmoji(d.kind);
+    document.getElementById('tt-kind').innerText = kindLabel(d.kind);
+    document.getElementById('tt-label').innerText = d.label;
+    document.getElementById('tt-digest').innerText = d.digest.length > 16 ? d.digest.slice(0, 12) + '…' + d.digest.slice(-4) : d.digest;
+    var tt = document.getElementById('tx-tooltip');
+    var x = Math.min(sx + 14, window.innerWidth - 275);
+    var y = Math.max(sy - 90, 8);
+    tt.style.left = x + 'px';
+    tt.style.top = y + 'px';
+    tt.classList.remove('hidden');
 }
+function hideTooltip() { document.getElementById('tx-tooltip').classList.add('hidden'); }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 async function navigateCheckpoint(delta) {
@@ -929,20 +947,15 @@ async function navigateCheckpoint(delta) {
 
 function toggleSearchMenu() {
     var m = document.getElementById('search-menu');
-    if (m.classList.contains('hidden')) {
-        m.classList.remove('hidden');
-        setTimeout(function() { document.getElementById('master-search').focus(); }, 50);
-    } else {
-        m.classList.add('hidden');
-    }
+    if (m.classList.contains('hidden')) { m.classList.remove('hidden'); setTimeout(function() { document.getElementById('master-search').focus(); }, 50); }
+    else m.classList.add('hidden');
 }
 
 async function searchCheckpoint() {
     var val = parseInt(document.getElementById('master-search').value);
     var err = document.getElementById('search-error');
     if (isNaN(val) || val < 0) { err.classList.remove('hidden'); return; }
-    err.classList.add('hidden');
-    toggleSearchMenu();
+    err.classList.add('hidden'); toggleSearchMenu();
     document.getElementById('master-search').value = '';
     await openCheckpointBySeq(val);
 }
@@ -951,6 +964,16 @@ async function searchCheckpoint() {
 function onSceneClick(event) {
     if (event.target.closest('.pointer-events-auto')) return;
     raycaster.setFromCamera(mouse, camera);
+
+    // Tx node clicks open explorer
+    if (txNodes.length > 0) {
+        var txHits = raycaster.intersectObjects(txNodes);
+        if (txHits.length > 0) {
+            var digest = txHits[0].object.userData.digest;
+            if (digest && digest !== '—') window.open('https://suiscan.xyz/mainnet/tx/' + digest, '_blank');
+            return;
+        }
+    }
 
     var hits = raycaster.intersectObjects(crystals);
     if (hits.length > 0) { selectCrystal(hits[0].object); return; }
@@ -964,15 +987,45 @@ function onSceneClick(event) {
 // ── Typewriter ────────────────────────────────────────────────────────────────
 var twTimeout;
 function typeWriter(text) {
-    var el = document.getElementById('dialogue-text');
-    el.innerHTML = '';
-    clearTimeout(twTimeout);
-    var i = 0;
-    function tick() {
-        if (i < text.length) { el.innerHTML += text.charAt(i++); twTimeout = setTimeout(tick, 20); }
-    }
+    var el = document.getElementById('dialogue-text'); el.innerHTML = ''; clearTimeout(twTimeout); var i = 0;
+    function tick() { if (i < text.length) { el.innerHTML += text.charAt(i++); twTimeout = setTimeout(tick, 20); } }
     tick();
 }
+
+// ── Tx helpers ────────────────────────────────────────────────────────────────
+function getTxKind(tx) {
+    var kind = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction && tx.transaction.data.transaction.kind;
+    if (!kind) return 'Unknown';
+    if (typeof kind === 'string') return kind;
+    if (kind.ProgrammableTransaction !== undefined) return 'Programmable';
+    if (kind.ConsensusCommitPrologue !== undefined || kind.ConsensusCommitPrologueV2 !== undefined) return 'Consensus';
+    if (kind.AuthenticatorStateUpdate !== undefined) return 'AuthState';
+    if (kind.EndOfEpochTransaction !== undefined) return 'EndOfEpoch';
+    if (kind.Genesis !== undefined) return 'Genesis';
+    return Object.keys(kind)[0] || 'Unknown';
+}
+function getTxLabel(tx, kind) {
+    if (kind === 'Programmable') {
+        var txns = tx && tx.transaction && tx.transaction.data && tx.transaction.data.transaction &&
+                   tx.transaction.data.transaction.kind && tx.transaction.data.transaction.kind.ProgrammableTransaction &&
+                   tx.transaction.data.transaction.kind.ProgrammableTransaction.transactions;
+        if (txns && txns.length > 0) {
+            var f = txns[0];
+            if (f.MoveCall) { var mc = f.MoveCall; return (mc.package ? mc.package.slice(0, 6) + '…' : '?') + '::' + mc.module + '::' + mc.function; }
+            if (f.TransferObjects) return 'Transfer Objects (' + txns.length + ' ops)';
+            if (f.SplitCoins) return 'Split Coins';
+            if (f.MergeCoins) return 'Merge Coins';
+            if (f.Publish) return 'Publish Package';
+            if (f.Upgrade) return 'Upgrade Package';
+            return Object.keys(f)[0] || 'Programmable';
+        }
+        return 'Programmable Transaction';
+    }
+    return { Consensus: 'Consensus Commit Prologue', AuthState: 'Authenticator State Update', EndOfEpoch: 'End of Epoch', Genesis: 'Genesis Transaction' }[kind] || kind;
+}
+function kindEmoji(k)     { return { Programmable: '🔵', Consensus: '⚙️', AuthState: '🔐', EndOfEpoch: '🔚', Genesis: '🌱' }[k] || '❓'; }
+function kindLabel(k)     { return { Programmable: 'User Tx', Consensus: 'Consensus', AuthState: 'Auth Update', EndOfEpoch: 'Epoch End', Genesis: 'Genesis' }[k] || k; }
+function kindPillStyle(k) { return { Programmable: 'bg-blue-900/50 text-blue-300 border border-blue-500/30', Consensus: 'bg-purple-900/50 text-purple-300 border border-purple-500/30', AuthState: 'bg-yellow-900/50 text-yellow-300 border border-yellow-500/30', EndOfEpoch: 'bg-red-900/50 text-red-300 border border-red-500/30', Genesis: 'bg-green-900/50 text-green-300 border border-green-500/30' }[k] || 'bg-gray-700/50 text-gray-300'; }
 
 // ── Animation Loop ────────────────────────────────────────────────────────────
 function animate() {
@@ -980,76 +1033,106 @@ function animate() {
     var t = clock.getElapsedTime();
     controls.update();
 
+    // ── Hover detection ──
     raycaster.setFromCamera(mouse, camera);
-    var allObjects = crystals.slice();
-    if (owlGroup) owlGroup.children.forEach(function(c) { allObjects.push(c); });
-    var hits = raycaster.intersectObjects(allObjects, true);
 
-    var newHovered = null;
-    if (hits.length > 0) {
-        var obj = hits[0].object;
-        var isOwl = obj.userData.isOwl || (obj.parent && obj.parent.userData.isOwl);
-        if (isOwl) {
-            document.body.style.cursor = 'pointer';
-        } else {
-            var crystalObj = crystals.indexOf(obj) !== -1 ? obj : null;
-            if (crystalObj && crystalObj.userData.checkpoint) {
-                document.body.style.cursor = 'pointer';
-                newHovered = crystalObj;
-            } else {
-                document.body.style.cursor = 'default';
-            }
-        }
+    // Check tx nodes first when viz is active
+    var newHoveredTx = null;
+    if (txNodes.length > 0) {
+        var txHits = raycaster.intersectObjects(txNodes);
+        if (txHits.length > 0) newHoveredTx = txHits[0].object;
+    }
+
+    if (newHoveredTx !== hoveredTxNode) {
+        if (hoveredTxNode) { gsap.to(hoveredTxNode.scale, { x: 1, y: 1, z: 1, duration: 0.15 }); }
+        hoveredTxNode = newHoveredTx;
+        if (hoveredTxNode) { gsap.to(hoveredTxNode.scale, { x: 2.2, y: 2.2, z: 2.2, duration: 0.15 }); }
+    }
+
+    if (hoveredTxNode) {
+        document.body.style.cursor = 'pointer';
+        var wp = new THREE.Vector3(); hoveredTxNode.getWorldPosition(wp); wp.project(camera);
+        var sx = (wp.x * 0.5 + 0.5) * window.innerWidth;
+        var sy = (-(wp.y * 0.5) + 0.5) * window.innerHeight;
+        showTooltip(hoveredTxNode, sx, sy);
     } else {
-        document.body.style.cursor = 'default';
+        hideTooltip();
+
+        // Check crystal / owl hover
+        var allObjs = crystals.slice();
+        if (owlGroup) owlGroup.children.forEach(function(c) { allObjs.push(c); });
+        var hits = raycaster.intersectObjects(allObjs, true);
+        var newHovered = null;
+        if (hits.length > 0) {
+            var obj = hits[0].object;
+            var isOwl = obj.userData.isOwl || (obj.parent && obj.parent.userData.isOwl);
+            if (isOwl) { document.body.style.cursor = 'pointer'; }
+            else if (crystals.indexOf(obj) !== -1 && obj.userData.checkpoint) { document.body.style.cursor = 'pointer'; newHovered = obj; }
+            else { document.body.style.cursor = 'default'; }
+        } else { document.body.style.cursor = 'default'; }
+
+        if (newHovered !== hoveredCrystal) {
+            if (hoveredCrystal && hoveredCrystal !== selectedCrystal) {
+                gsap.to(hoveredCrystal.scale, { x: hoveredCrystal.userData.baseScale, y: hoveredCrystal.userData.baseScale, z: hoveredCrystal.userData.baseScale, duration: 0.2 });
+            }
+            if (newHovered && newHovered !== selectedCrystal) {
+                gsap.to(newHovered.scale, { x: newHovered.userData.baseScale * 1.2, y: newHovered.userData.baseScale * 1.2, z: newHovered.userData.baseScale * 1.2, duration: 0.2 });
+            }
+            hoveredCrystal = newHovered;
+        }
     }
 
-    if (newHovered !== hoveredCrystal) {
-        if (hoveredCrystal && hoveredCrystal !== selectedCrystal) {
-            gsap.to(hoveredCrystal.scale, { x: hoveredCrystal.userData.baseScale, y: hoveredCrystal.userData.baseScale, z: hoveredCrystal.userData.baseScale, duration: 0.2 });
-        }
-        if (newHovered && newHovered !== selectedCrystal) {
-            gsap.to(newHovered.scale, { x: newHovered.userData.baseScale * 1.18, y: newHovered.userData.baseScale * 1.18, z: newHovered.userData.baseScale * 1.18, duration: 0.2 });
-        }
-        hoveredCrystal = newHovered;
-    }
-
+    // ── Animate checkpoint crystals ──
     crystals.forEach(function(c, i) {
-        if (c !== selectedCrystal) {
-            c.position.y = c.userData.originalY + Math.sin(t * 1.2 + i * 0.75) * 0.13;
-        }
-        c.rotation.y += 0.009;
-        c.rotation.x = Math.sin(t * 0.4 + i) * 0.08;
+        if (c !== selectedCrystal) c.position.y = c.userData.originalY + Math.sin(t * 1.2 + i * 0.75) * 0.13;
+        c.rotation.y += 0.009; c.rotation.x = Math.sin(t * 0.4 + i) * 0.08;
     });
 
-    if (owlGroup) {
-        var h = owlGroup.getObjectByName('head');
-        if (h) {
-            h.rotation.y = Math.sin(t * 0.8) * 0.4 + Math.sin(t * 0.2) * 0.2;
-            h.rotation.z = Math.cos(t * 0.5) * 0.1;
+    // ── Animate visualization ──
+    if (txVisualization) {
+        // Slowly rotate the whole visualization
+        txVisualization.rotation.y = t * 0.08;
+
+        // Pulse the core
+        var core = txVisualization.getObjectByName('vizCore');
+        var coreLight = txVisualization.getObjectByName('coreLight');
+        if (core) {
+            var pulse = 1 + Math.sin(t * 2.5) * 0.25;
+            core.scale.setScalar(pulse);
+            core.material.emissiveIntensity = 1.5 + Math.sin(t * 2.5) * 0.8;
         }
+        if (coreLight) coreLight.intensity = 1.8 + Math.sin(t * 2.5) * 0.7;
+
+        // Spin stats ring at different speed
+        var statsRing = txVisualization.getObjectByName('statsRing');
+        if (statsRing) statsRing.rotation.y = t * 0.35;
+
+        // Gently bob individual tx nodes
+        txNodes.forEach(function(node, i) {
+            var fp = node.userData.finalPos;
+            if (fp) node.position.y = fp.y + Math.sin(t * 0.9 + i * 0.4) * 0.06;
+        });
     }
 
+    // ── Owl head sway ──
+    if (owlGroup) {
+        var h = owlGroup.getObjectByName('head');
+        if (h) { h.rotation.y = Math.sin(t * 0.8) * 0.4 + Math.sin(t * 0.2) * 0.2; h.rotation.z = Math.cos(t * 0.5) * 0.1; }
+    }
+
+    // ── Magic ring ──
     var ring = scene.getObjectByName('magicRing');
     if (ring) { ring.rotation.z = t * 0.2; ring.scale.setScalar(1 + Math.sin(t * 2) * 0.05); }
 
+    // ── Particles ──
     if (fireflies) {
-        var fp = fireflies.geometry.attributes.position.array;
-        var ph = fireflies.geometry.attributes.phase.array;
-        for (var i = 0; i < fp.length / 3; i++) {
-            fp[i * 3 + 1] += Math.sin(t + ph[i]) * 0.005;
-            if (fp[i * 3 + 1] > 12) fp[i * 3 + 1] = 0;
-        }
+        var fp = fireflies.geometry.attributes.position.array, ph = fireflies.geometry.attributes.phase.array;
+        for (var i = 0; i < fp.length / 3; i++) { fp[i*3+1] += Math.sin(t + ph[i]) * 0.005; if (fp[i*3+1] > 12) fp[i*3+1] = 0; }
         fireflies.geometry.attributes.position.needsUpdate = true;
     }
-
     if (magicDust) {
         var dp = magicDust.geometry.attributes.position.array;
-        for (var i = 0; i < dp.length / 3; i++) {
-            dp[i * 3 + 1] += 0.02;
-            dp[i * 3] += Math.sin(t + i) * 0.01;
-            if (dp[i * 3 + 1] > 8) dp[i * 3 + 1] = 0.5;
-        }
+        for (var i = 0; i < dp.length / 3; i++) { dp[i*3+1] += 0.02; dp[i*3] += Math.sin(t + i) * 0.01; if (dp[i*3+1] > 8) dp[i*3+1] = 0.5; }
         magicDust.geometry.attributes.position.needsUpdate = true;
     }
 
