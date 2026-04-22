@@ -595,7 +595,7 @@ async function loadInitialData() {
         document.getElementById('loading-status').innerText = 'Fetching latest checkpoints from Sui Mainnet...';
         latestSeq = parseInt(await rpc('sui_getLatestCheckpointSequenceNumber'));
 
-        var result = await rpc('suix_getCheckpoints', [null, CRYSTAL_COUNT, true]);
+        var result = await rpc('sui_getCheckpoints', [null, CRYSTAL_COUNT, true]);
         displayedCheckpoints = result.data;
         updateCrystals();
 
